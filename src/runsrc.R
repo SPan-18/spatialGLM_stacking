@@ -1,6 +1,7 @@
 # Load required libraries
 library(MASS)
 library(fastmatrix)
+library(parallel)
 library(progress)
 library(dplyr)
 library(ggplot2)
