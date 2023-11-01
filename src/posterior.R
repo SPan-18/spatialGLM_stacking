@@ -3,7 +3,7 @@
 # S = data.frame(x = c(0.1, 0.2, 0.3), y = c(0.5, 0.9, 0.2))
 # phi = 3, nu_xi = 0, nu_beta = 0.1, nu_z = 0.1, alpha_epsilon = 0.5
 
-sampler_gaussian <- function(n, p, y, X, XtXplusIchol, L_z,
+sampler_poisson <- function(n, p, y, X, XtXplusIchol, L_z,
                              nu_xi, nu_beta, nu_z, alpha_epsilon){
   if(nu_xi == 0){
     sigmasq_xi <- 1
@@ -26,18 +26,16 @@ sampler_gaussian <- function(n, p, y, X, XtXplusIchol, L_z,
   return(gamma)
 }
 
-fast_posterior_GCM <- function(y, X, S = NULL, 
-                               ypred = NULL, Xpred = NULL,
-                               J_tilde = NULL, V_tilde = NULL,
-                               V_z_train, N.samp,
-                               family = "poisson",
-                               beta_prior = "gaussian",
-                               spatial_prior = "gaussian",
-                               mod_params,
-                               pred = FALSE,
-                               Rfast_parallel = FALSE){
-  n <- dim(X)[1]
-  p <- dim(X)[2]
+elpd_GCM <- function(y_train, X_train, y_pred, X_pred, N.samp,
+                     J_tilde, V_tilde, V_z_train,
+                     family = "poisson",
+                     beta_prior = "gaussian",
+                     spatial_prior = "gaussian",
+                     mod_params,
+                     Rfastparallel = FALSE){
+  
+  n <- length(y_train)
+  p <- dim(X_train)[2]
   
   phi <- mod_params$phi
   nu_xi <- mod_params$nu_xi
@@ -45,48 +43,37 @@ fast_posterior_GCM <- function(y, X, S = NULL,
   nu_z <- mod_params$nu_z
   alpha_epsilon <- mod_params$alpha_epsilon
   
-  L_z <- Rfast::cholesky(V_z_train, parallel = Rfast_parallel)
-  
-  XtXplusI <- crossprod(X) / 3 + diag(p)
+  L_z_train <- Rfast::cholesky(V_z_train, parallel = Rfastparallel)
+  XtXplusI <- crossprod(X_train) / 3 + diag(p)
   XtXplusIchol <- chol(XtXplusI)
   
+  gamma_train <- sapply(1:N.samp, function(x)  
+    sampler_poisson(n = n, p = p, y = y_train, X = X_train, 
+                    XtXplusIchol = XtXplusIchol, 
+                    L_z = L_z_train,
+                    nu_xi = nu_xi, 
+                    nu_beta = nu_beta, 
+                    nu_z = nu_z, 
+                    alpha_epsilon = alpha_epsilon))
   
-  gamma <- sapply(1:N.samp, function(x) sampler_gaussian(n = n, p = p, y = y, X = X, 
-                                                         XtXplusIchol = XtXplusIchol, 
-                                                         L_z = L_z,
-                                                         nu_xi = nu_xi, 
-                                                         nu_beta = nu_beta, 
-                                                         nu_z = nu_z, 
-                                                         alpha_epsilon = alpha_epsilon))
+  samp_beta <- gamma_train[(n+1):(n+p), ]
+  samp_z <- gamma_train[(n+p+1):(2*n+p), ]
   
-  samp_beta <- gamma[(n+1):(n+p), ]
-  samp_z <- gamma[(n+p+1):(2*n+p), ]
-  # return(list(beta = gamma[(n+1):(n+p), ],
-  #             z = gamma[(n+p+1):(2*n+p), ]))
-  if(pred){
-    if(is.null(ypred) && is.null(Xpred) && is.null(J_tilde) && is.null(V_tilde)){
-      stop("Supply information on left out y, X, J_phi, V_phi.")
-    }else{
-      # find elpd
-      z_tilde <- predict_z(z_post = gamma[(n+p+1):(2*n+p), ], 
-                           J = J_tilde, cholV = L_z,
-                           V_tilde = V_tilde, nu_z = nu_z)
-      mu <- exp(Xpred %*% samp_beta + z_tilde)
-      elpd_mat <- dpois(ypred, mu, log = TRUE)
-      elpd <- apply(elpd_mat, 1, mean)
-    }
-    return(list(beta = samp_beta, z = samp_z, elpd = elpd))
-  }else{
-    return(list(beta = samp_beta,
-                z = samp_z))
-  }
+  z_tilde <- predict_z(z_post = samp_z, 
+                       J = J_tilde, cholV = L_z_train,
+                       V_tilde = V_tilde, nu_z = nu_z)
+  mu <- exp(X_pred %*% samp_beta + z_tilde)
+  elpd_mat <- dpois(y_pred, mu, log = TRUE)
+  elpd <- apply(elpd_mat, 1, mean)
+  
+  return(elpd)
 }
 
-posterior_GCM <- function(y, X, S, N.samp, 
-                          family = "poisson",
-                          fixed_prior = "gaussian", 
-                          spatial_prior = "gaussian", 
-                          mod_params){
+slow_posterior_GCM <- function(y, X, S, N.samp, 
+                               family = "poisson",
+                               fixed_prior = "gaussian", 
+                               spatial_prior = "gaussian", 
+                               mod_params){
   n <- dim(X)[1]
   p <- dim(X)[2]
   
