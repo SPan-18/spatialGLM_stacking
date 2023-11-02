@@ -5,7 +5,8 @@ library(parallel)
 library(progress)
 library(dplyr)
 library(ggplot2)
-library(akima)
+library(MBA)
+library(latex2exp)
 
 # Source required scripts
 
@@ -16,3 +17,4 @@ source("../src/posterior.R")
 source("../src/predictive.R")
 source("../src/sim_countdata.R")
 source("../src/cm_stacking.R")
+source("../src/pointrefplot.R")
