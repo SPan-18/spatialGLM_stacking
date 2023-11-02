@@ -3,10 +3,10 @@
 # where x_k is a sample from N(0,1)
 
 sim_count <- function(n, beta, phi){
-  # S <- data.frame(s1 = c(0,0,1,1,runif(n - 4, 0, 1)),
-  #                 s2 = c(0,1,0,1,runif(n - 4, 0, 1)))
-  S <- data.frame(s1 = runif(n, 0, 1),
-                  s2 = runif(n, 0, 1))
+  S <- data.frame(s1 = c(0,0,1,1,runif(n - 4, 0, 1)),
+                  s2 = c(0,1,0,1,runif(n - 4, 0, 1)))
+  # S <- data.frame(s1 = runif(n, 0, 1),
+  #                 s2 = runif(n, 0, 1))
   p <- length(beta)
   X <- cbind(rep(1, n), sapply(1:(p-1), function(x) rnorm(n)))
   V <- as.matrix(dist(S))
