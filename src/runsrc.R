@@ -3,10 +3,13 @@ library(MASS)
 library(fastmatrix)
 library(parallel)
 library(progress)
+library(loo)
+
 library(dplyr)
 library(ggplot2)
 library(MBA)
 library(latex2exp)
+library(knitr)
 
 # Source required scripts
 

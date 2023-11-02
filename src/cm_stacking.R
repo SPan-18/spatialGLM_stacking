@@ -89,8 +89,6 @@ posterior_and_elpd <- function(y, X, distmat, N.samp, MC.samp,
                                                         nu_beta = nu_beta, 
                                                         nu_z = nu_z, 
                                                         alpha_epsilon = alpha_epsilon))
-  post_samples = list(beta = gamma[(n+1):(n+p), ],
-                      z = gamma[(n+p+1):(2*n+p), ])
   
   # K-fold CV to find elpd
   elpd <- CV_posterior_sampler(y = y, X = X, V_z_full = V_z, N.samp = MC.samp,
@@ -101,7 +99,9 @@ posterior_and_elpd <- function(y, X, distmat, N.samp, MC.samp,
                                CV_K = CV_K,
                                Rfastparallel = Rfastparallel)
   
-  return(list(post_samples = post_samples, elpd = elpd))
+  return(list(beta = gamma[(n+1):(n+p), ],
+              z = gamma[(n+p+1):(2*n+p), ], 
+              elpd = elpd))
 }
 
 # stacking using K-fold cross-validation
@@ -112,10 +112,13 @@ cm_stacking <- function(y, X, S, N.samp, MC.samp = 200,
                         spatial_prior = "gaussian",
                         mod_params_list,
                         CV_fold = 10,
-                        Rfast_parallel = FALSE){
+                        Rfast_parallel = FALSE,
+                        verbose = TRUE,
+                        print_stackweights = TRUE){
   
   distmat <- as.matrix(dist(S))
   
+  t_start <- Sys.time()
   samps <- lapply(1:length(mod_params_list), function(x)
     posterior_and_elpd(y = y, X = X, distmat = distmat,
                        N.samp = N.samp, MC.samp = MC.samp,
@@ -126,7 +129,36 @@ cm_stacking <- function(y, X, S, N.samp, MC.samp = 200,
                        CV_K = CV_fold,
                        Rfastparallel = Rfast_parallel))
   
-  return(samps)
+  elpd_mat <- do.call(cbind, lapply(samps, function(x) x$elpd))
+  w_hat <- loo::stacking_weights(elpd_mat)
+  t_end <- Sys.time()
+  runtime <- difftime(t_end, t_start)
+  if(verbose) cat("\nRUNTIME:", round(runtime, 2), units(runtime), ".\n\n")
+  
+  stack_out <- as.matrix(do.call(rbind, lapply(mod_params_list, unlist)))
+  stack_out <- cbind(stack_out, round(as.numeric(w_hat), 2))
+  colnames(stack_out) = c("phi", "epsilon", "nu.xi", "nu.beta", "nu.z", "weight")
+  rownames(stack_out) = paste("Model", 1:nrow(stack_out))
+  if(print_stackweights){
+    cat("MODEL WEIGHTS:\n")
+    print(knitr::kable(stack_out))
+  } 
+  return(list(models = samps, weights = w_hat))
+}
+
+postrunsampler <- function(out, N.samp){
+  stack_weights <- as.numeric(out$weights)
+  n_post <- dim(out$models[[1]]$beta)[2]
+  p.obs <- dim(out$models[[1]]$beta)[1]
+  n.obs <- dim(out$models[[1]]$z)[1]
+  ids <- sample(1:n_post, size = N.samp, replace = TRUE)
+  post_samples <- sapply(1:N.samp, function(x){
+    model_id <- sample(1:length(out$models), 1, prob = stack_weights)
+    return(c(out$models[[model_id]]$beta[, ids[x]], 
+             out$models[[model_id]]$z[, ids[x]]))
+  })
+  return(list(beta = post_samples[1:p.obs, ],
+              z = post_samples[(p.obs+1):(n.obs+p.obs), ]))
 }
 
 # TEST above function
