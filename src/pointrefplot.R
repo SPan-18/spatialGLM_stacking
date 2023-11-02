@@ -9,6 +9,7 @@
 
 
 col.br <- colorRampPalette(c("midnightblue", "cyan", "yellow", "red"))
+col.RdBu <- colorRampPalette(c("blue", "white", "red"))
 # col.br <- colorRampPalette(c('#ca0020','#f4a582','#ffffff','#bababa','#404040'))
 
 pointref_plot=function(tab, colname, 
@@ -16,7 +17,7 @@ pointref_plot=function(tab, colname,
                 legend_title = "z"){
   
   surf <- mba.surf(tab[,c("s1","s2",colname)], 
-                   no.X = 200, no.Y = 200, h = 5, m = 1, n = 1, 
+                   no.X = 200, no.Y = 200, h = 8, m = 1, n = 1, 
                    extend=FALSE)$xyz.est
   
   surf_df <- data.frame(expand.grid(surf$x, surf$y), z = as.vector(surf$z))
@@ -25,7 +26,9 @@ pointref_plot=function(tab, colname,
   
   ggplot(surf_df, aes(x = x, y = y)) +
     geom_raster(aes(fill = z)) +
-    scale_fill_gradientn(colours = col.br(100)) +
+    # scale_fill_gradientn(colours = col.br(100)) +
+    # scale_fill_gradientn(colours = col.RdBu(100)) +
+    scale_fill_distiller(palette = "RdYlBu", direction = -1) +
     xlab("Easting") +
     ylab("Northing") +
     labs(fill = legend_title) +
