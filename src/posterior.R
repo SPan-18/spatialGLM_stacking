@@ -3,8 +3,9 @@
 # S = data.frame(x = c(0.1, 0.2, 0.3), y = c(0.5, 0.9, 0.2))
 # phi = 3, nu_xi = 0, nu_beta = 0.1, nu_z = 0.1, alpha_epsilon = 0.5
 
-sampler_poisson <- function(n, p, y, X, XtXplusIchol, L_z,
-                             nu_xi, nu_beta, nu_z, alpha_epsilon){
+sampler_poisson <- function(n, p, y, X, 
+                            XtXplusIchol, L_z,
+                            nu_xi, nu_beta, nu_z, alpha_epsilon){
   if(nu_xi == 0){
     sigmasq_xi <- 1
     w_xi <- rnorm(n)
@@ -27,7 +28,7 @@ sampler_poisson <- function(n, p, y, X, XtXplusIchol, L_z,
 }
 
 elpd_GCM <- function(y_train, X_train, y_pred, X_pred, N.samp,
-                     J_tilde, V_tilde, V_z_train,
+                     J_tilde, V_tilde, V_z_train, L_z_train,
                      family = "poisson",
                      beta_prior = "gaussian",
                      spatial_prior = "gaussian",
@@ -43,7 +44,8 @@ elpd_GCM <- function(y_train, X_train, y_pred, X_pred, N.samp,
   nu_z <- mod_params$nu_z
   alpha_epsilon <- mod_params$alpha_epsilon
   
-  L_z_train <- Rfast::cholesky(V_z_train, parallel = Rfastparallel)
+  # attack here
+  # if(is.null(L_z_train)) L_z_train <- Rfast::cholesky(V_z_train, parallel = Rfastparallel)
   XtXplusI <- crossprod(X_train) / 3 + diag(p)
   XtXplusIchol <- chol(XtXplusI)
   
@@ -63,10 +65,10 @@ elpd_GCM <- function(y_train, X_train, y_pred, X_pred, N.samp,
                        J = J_tilde, cholV = L_z_train,
                        V_tilde = V_tilde, nu_z = nu_z)
   mu <- exp(X_pred %*% samp_beta + z_tilde)
-  elpd_mat <- dpois(y_pred, mu, log = TRUE)
+  elpd_mat <- dpois(y_pred, mu, log = FALSE)
   elpd <- apply(elpd_mat, 1, mean)
   
-  return(elpd)
+  return(log(elpd))
 }
 
 slow_posterior_GCM <- function(y, X, S, N.samp, 

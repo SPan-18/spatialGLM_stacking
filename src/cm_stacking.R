@@ -17,7 +17,8 @@ create_model_list <- function(G_phi, G_epsilon, G_nuxi = 0,
 
 # K-fold CV posterior sampling
 
-CV_posterior_sampler <- function(y, X, V_z_full, N.samp,
+CV_posterior_sampler <- function(y, X, N.samp,
+                                 V_z_full, L_z_full = NULL,
                                  family = "poisson",
                                  beta_prior = "gaussian",
                                  spatial_prior = "gaussian",
@@ -26,7 +27,7 @@ CV_posterior_sampler <- function(y, X, V_z_full, N.samp,
                                  Rfastparallel = FALSE){
   
   n <- length(y)
-  partition_list <- id_partition(n, CV_K)
+  partition_list <- id_partition(n, CV_K, random = FALSE)
   # phi <- mod_params$phi
   # V_z_full <- exp(- phi * distmat)
   # L_z_full <- Rfast::cholesky(V_z_full, parallel = Rfast_parallel)
@@ -43,12 +44,12 @@ CV_posterior_sampler <- function(y, X, V_z_full, N.samp,
                                           partition_list[[x]]],
              V_z_train = V_z_full[-partition_list[[x]], 
                                             -partition_list[[x]]], 
+             L_z_train = cholesky_CV(L_z_full, partition_list[[x]]),
              N.samp = N.samp, 
              mod_params = mod_params,
              family = family,
              beta_prior = beta_prior, 
-             spatial_prior = spatial_prior,
-             Rfastparallel = Rfastparallel),
+             spatial_prior = spatial_prior, Rfastparallel = Rfastparallel),
     mc.cores = ncores)
   
   elpd <- array(dim = n)
@@ -60,7 +61,8 @@ CV_posterior_sampler <- function(y, X, V_z_full, N.samp,
 
 # sample posterior and then find elpd
 
-posterior_and_elpd <- function(y, X, distmat, N.samp, MC.samp,
+posterior_and_elpd <- function(y, X, N.samp, MC.samp,
+                               distmat,
                                family = "poisson", 
                                beta_prior = "gaussian",
                                spatial_prior = "gaussian",
@@ -83,7 +85,7 @@ posterior_and_elpd <- function(y, X, distmat, N.samp, MC.samp,
   XtXplusIchol <- chol(XtXplusI)
   
   gamma <- sapply(1:N.samp, function(x) sampler_poisson(n = n, p = p, y = y, X = X, 
-                                                        XtXplusIchol = XtXplusIchol, 
+                                                        XtXplusIchol = XtXplusIchol,
                                                         L_z = L_z,
                                                         nu_xi = nu_xi, 
                                                         nu_beta = nu_beta, 
@@ -91,7 +93,8 @@ posterior_and_elpd <- function(y, X, distmat, N.samp, MC.samp,
                                                         alpha_epsilon = alpha_epsilon))
   
   # K-fold CV to find elpd
-  elpd <- CV_posterior_sampler(y = y, X = X, V_z_full = V_z, N.samp = MC.samp,
+  elpd <- CV_posterior_sampler(y = y, X = X, N.samp = MC.samp,
+                               V_z_full = V_z, L_z_full = L_z,
                                family = family,
                                beta_prior = beta_prior,
                                spatial_prior = spatial_prior,
@@ -112,22 +115,29 @@ cm_stacking <- function(y, X, S, N.samp, MC.samp = 200,
                         spatial_prior = "gaussian",
                         mod_params_list,
                         CV_fold = 10,
-                        Rfast_parallel = FALSE,
+                        Rfastparallel = FALSE,
                         verbose = TRUE,
                         print_stackweights = TRUE){
   
-  distmat <- as.matrix(dist(S))
+  # distmat <- as.matrix(dist(S))
+  distmat <- Rfast::Dist(S)
+  
+  n <- length(y)
+  permut <- sample(1:n)
+  y <- y[permut]
+  X <- X[permut, ]
+  S <- S[permut, ]
   
   t_start <- Sys.time()
   samps <- lapply(1:length(mod_params_list), function(x)
-    posterior_and_elpd(y = y, X = X, distmat = distmat,
+    posterior_and_elpd(y = y, X = X, 
+                       distmat = distmat,
                        N.samp = N.samp, MC.samp = MC.samp,
                        family = family,
                        beta_prior = beta_prior,
                        spatial_prior = spatial_prior,
                        mod_params = mod_params_list[[x]],
-                       CV_K = CV_fold,
-                       Rfastparallel = Rfast_parallel))
+                       CV_K = CV_fold, Rfastparallel = Rfastparallel))
   
   elpd_mat <- do.call(cbind, lapply(samps, function(x) x$elpd))
   w_hat <- loo::stacking_weights(elpd_mat)
@@ -143,6 +153,12 @@ cm_stacking <- function(y, X, S, N.samp, MC.samp = 200,
     cat("MODEL WEIGHTS:\n")
     print(knitr::kable(stack_out))
   } 
+  
+  for(i in 1:length(samps)){
+    samps[[i]]$z <- samps[[i]]$z[order(permut), ]
+    samps[[i]]$elpd <- samps[[i]]$elpd[order(permut)]
+  }
+  
   return(list(models = samps, weights = w_hat))
 }
 
@@ -161,8 +177,4 @@ postrunsampler <- function(out, N.samp){
               z = post_samples[(p.obs+1):(n.obs+p.obs), ]))
 }
 
-# TEST above function
-
-
-
-
+# TEST

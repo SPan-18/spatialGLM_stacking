@@ -24,13 +24,19 @@ mysolve <- function(A, b){
 }
 
 # divide a set into K equal parts
-id_partition <- function(N, K){
-  n <- floor(N / K)
-  boxid <- c(rep(1:K, n), rep(1, N %% K))
-  boxes <- sample(boxid)
-  idlist <- vector(mode = "list", length = K)
-  for(i in 1:K){
-    idlist[[i]] <- which(boxes == i)
+id_partition <- function(N, K, random = TRUE){
+  if(random){
+    ids <- 1:N
+    idlist <- split(ids, sort(ids %% K))
+    permt <- sample(ids)
+    for(i in 1:K){
+      idlist[[i]] <- permt[idlist[[i]]]
+    }
+    names(idlist) = NULL
+  }else{
+    ids <- 1:N
+    idlist <- split(ids, sort(ids %% K))
+    names(idlist) = NULL
   }
   return(idlist)
 }
