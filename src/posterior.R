@@ -28,7 +28,8 @@ sampler_poisson <- function(n, p, y, X,
 }
 
 elpd_GCM <- function(y_train, X_train, y_pred, X_pred, N.samp,
-                     J_tilde, V_tilde, V_z_train, L_z_train,
+                     J_tilde, V_tilde, V_z_train, 
+                     L_z_train = NULL,
                      family = "poisson",
                      beta_prior = "gaussian",
                      spatial_prior = "gaussian",
@@ -45,7 +46,7 @@ elpd_GCM <- function(y_train, X_train, y_pred, X_pred, N.samp,
   alpha_epsilon <- mod_params$alpha_epsilon
   
   # attack here
-  # if(is.null(L_z_train)) L_z_train <- Rfast::cholesky(V_z_train, parallel = Rfastparallel)
+  if(is.null(L_z_train)) L_z_train <- Rfast::cholesky(V_z_train, parallel = Rfastparallel)
   XtXplusI <- crossprod(X_train) / 3 + diag(p)
   XtXplusIchol <- chol(XtXplusI)
   
