@@ -4,10 +4,11 @@ predict_z <- function(z_post, J, cholV, V_tilde, nu_z,
                       Rfast_parallel = FALSE){
   m <- dim(V_tilde)[1]
   n.samp <- dim(z_post)[2]
-  u <- rgamma(n.samp, 0.5 * nu_z, 0.5)
-  w <- sapply(1:n.samp, function(x) rnorm(m) * sqrt(nu_z / u[x]))
-  # w <- sapply(1:100, function(x) rnorm(m))
+  n <- dim(z_post)[1]
   z_tilde <- backsolve(cholV, z_post, transpose = TRUE)
+  u <- rgamma(n.samp, 0.5 * (nu_z + n), 0.5)
+  w <- sapply(1:n.samp, function(x) rnorm(m) * sqrt((nu_z + sum(z_tilde^2)) / u[x]))
+  # w <- sapply(1:100, function(x) rnorm(m))
   temp <- backsolve(cholV, J, transpose = TRUE)
   z_tilde <- crossprod(temp, z_tilde)
   # return(z_tilde)
