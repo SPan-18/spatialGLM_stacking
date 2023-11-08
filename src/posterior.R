@@ -39,7 +39,7 @@ elpd_GCM <- function(y_train, X_train, y_pred, X_pred, N.samp,
   n <- length(y_train)
   p <- dim(X_train)[2]
   
-  phi <- mod_params$phi
+  # phi <- mod_params$phi
   nu_xi <- mod_params$nu_xi
   nu_beta <- mod_params$nu_beta
   nu_z <- mod_params$nu_z

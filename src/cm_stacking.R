@@ -2,12 +2,13 @@
 # G_alphaepsilon <- c(0.5, 0.75)
 # model_list <- create_model_list(G_phi, G_alphaepsilon)
 
-create_model_list <- function(G_phi, G_epsilon, G_nuxi = 0,
-                              G_nubeta = 100, G_nuz = 100){
-  models <- expand.grid(G_phi, G_epsilon, G_nuxi, G_nubeta, G_nuz)
-  names(models) <- c("phi", "alpha_epsilon", "nu_xi", "nu_beta", "nu_z")
+create_model_list <- function(G_decay, G_smoothness, G_epsilon, G_nuxi = 0,
+                              G_nubeta = 1, G_nuz = 1){
+  models <- expand.grid(G_decay, G_smoothness, G_epsilon, G_nuxi, G_nubeta, G_nuz)
+  names(models) <- c("phi", "smooth", "alpha_epsilon", "nu_xi", "nu_beta", "nu_z")
   model_list <- lapply(1:nrow(models), function(x){
     return(list(phi = models[x, "phi"],
+                nu_matern = models[x, "smooth"],
                 alpha_epsilon = models[x, "alpha_epsilon"],
                 nu_xi = models[x, "nu_xi"],
                 nu_beta = models[x, "nu_beta"],
@@ -34,23 +35,47 @@ CV_posterior_sampler <- function(y, X, N.samp,
   
   ncores <- detectCores()
   CV_samps <- mclapply(1:length(partition_list), function(x)
-    elpd_GCM(y_train = y[-partition_list[[x]]], 
-             X_train = X[-partition_list[[x]], ], 
-             y_pred = y[partition_list[[x]]], 
-             X_pred = X[partition_list[[x]], ], 
-             J_tilde = V_z_full[- partition_list[[x]], 
+    elpd_GCM(y_train = y[-partition_list[[x]]],
+             X_train = X[-partition_list[[x]], ],
+             y_pred = y[partition_list[[x]]],
+             X_pred = X[partition_list[[x]], ],
+             J_tilde = V_z_full[- partition_list[[x]],
                                           partition_list[[x]]],
-             V_tilde = V_z_full[partition_list[[x]], 
+             V_tilde = V_z_full[partition_list[[x]],
                                           partition_list[[x]]],
-             V_z_train = V_z_full[-partition_list[[x]], 
-                                            -partition_list[[x]]], 
+             V_z_train = V_z_full[-partition_list[[x]],
+                                            -partition_list[[x]]],
              L_z_train = cholesky_CV(L_z_full, partition_list[[x]]),
-             N.samp = N.samp, 
+             N.samp = N.samp,
              mod_params = mod_params,
              family = family,
-             beta_prior = beta_prior, 
+             beta_prior = beta_prior,
              spatial_prior = spatial_prior, Rfastparallel = Rfastparallel),
     mc.cores = ncores)
+  
+  # socket cluster approach
+  # cl <- makeCluster(ncores - 1)
+  # CV_samps <- parLapply(cl, 1:length(partition_list), function(x)
+  #   elpd_GCM(y_train = y[-partition_list[[x]]], 
+  #            X_train = X[-partition_list[[x]], ], 
+  #            y_pred = y[partition_list[[x]]], 
+  #            X_pred = X[partition_list[[x]], ], 
+  #            J_tilde = V_z_full[- partition_list[[x]], 
+  #                               partition_list[[x]]],
+  #            V_tilde = V_z_full[partition_list[[x]], 
+  #                               partition_list[[x]]],
+  #            V_z_train = V_z_full[-partition_list[[x]], 
+  #                                 -partition_list[[x]]], 
+  #            L_z_train = cholesky_CV(L_z_full, partition_list[[x]]),
+  #            N.samp = N.samp, 
+  #            mod_params = mod_params,
+  #            family = family,
+  #            beta_prior = beta_prior, 
+  #            spatial_prior = spatial_prior, Rfastparallel = Rfastparallel))
+  # clusterExport(cl, 'y', 'X', 'V_z_full', 'L_z_full', 
+  #               'N.samp', 'mod_params', 'family', 'beta_prior', 
+  #               'spatial_prior', 'Rfastparallel')
+  # stopCluster(cl)
   
   elpd <- array(dim = n)
   for(k in 1:CV_K){
@@ -63,6 +88,7 @@ CV_posterior_sampler <- function(y, X, N.samp,
 
 posterior_and_elpd <- function(y, X, N.samp, MC.samp,
                                distmat,
+                               spCov = "matern",
                                family = "poisson", 
                                beta_prior = "gaussian",
                                spatial_prior = "gaussian",
@@ -78,8 +104,17 @@ posterior_and_elpd <- function(y, X, N.samp, MC.samp,
   nu_beta <- mod_params$nu_beta
   nu_z <- mod_params$nu_z
   alpha_epsilon <- mod_params$alpha_epsilon
+  nu_matern <- mod_params$nu_matern
   
-  V_z <- exp(- phi * distmat)
+  if(spCov == "exponential"){
+    V_z <- exp(- phi * distmat)
+  }else if(spCov == "matern"){
+    V_z <- matern(u = distmat, phi = 1/phi, kappa = nu_matern)
+  }else{
+    V_z <- geoR::cov.spatial(distmat, cov.model = spCov, 
+                             cov.pars = c(1, 1/phi), kappa = nu_matern)
+  }
+  
   L_z <- Rfast::cholesky(V_z, parallel = Rfastparallel)
   XtXplusI <- crossprod(X) / 3 + diag(p)
   XtXplusIchol <- chol(XtXplusI)
@@ -109,15 +144,16 @@ posterior_and_elpd <- function(y, X, N.samp, MC.samp,
 
 # stacking using K-fold cross-validation
 
-cm_stacking <- function(y, X, S, N.samp, MC.samp = 200,
-                        family = "poisson",
-                        beta_prior = "gaussian",
-                        spatial_prior = "gaussian",
-                        mod_params_list,
-                        CV_fold = 10,
-                        Rfastparallel = FALSE,
-                        verbose = TRUE,
-                        print_stackweights = TRUE){
+spGLMM_stack <- function(y, X, S, N.samp, MC.samp = 200,
+                         family = "poisson",
+                         spCov = "matern",
+                         beta_prior = "gaussian",
+                         spatial_prior = "gaussian",
+                         mod_params_list,
+                         CV_fold = 10,
+                         Rfastparallel = FALSE,
+                         verbose = TRUE,
+                         print_stackweights = TRUE){
   
   # distmat <- as.matrix(dist(S))
   distmat <- Rfast::Dist(S)
@@ -130,14 +166,27 @@ cm_stacking <- function(y, X, S, N.samp, MC.samp = 200,
   
   t_start <- Sys.time()
   samps <- lapply(1:length(mod_params_list), function(x)
-    posterior_and_elpd(y = y, X = X, 
+    posterior_and_elpd(y = y, X = X,
                        distmat = distmat,
+                       spCov = spCov,
                        N.samp = N.samp, MC.samp = MC.samp,
                        family = family,
                        beta_prior = beta_prior,
                        spatial_prior = spatial_prior,
                        mod_params = mod_params_list[[x]],
                        CV_K = CV_fold, Rfastparallel = Rfastparallel))
+  
+  # samps <- vector(mode = "list", length = length(mod_params_list))
+  # for(x in 1:length(mod_params_list)){
+  #   samps[[x]] = posterior_and_elpd(y = y, X = X, 
+  #                                   distmat = distmat,
+  #                                   N.samp = N.samp, MC.samp = MC.samp,
+  #                                   family = family,
+  #                                   beta_prior = beta_prior,
+  #                                   spatial_prior = spatial_prior,
+  #                                   mod_params = mod_params_list[[x]],
+  #                                   CV_K = CV_fold, Rfastparallel = Rfastparallel)
+  # }
   
   elpd_mat <- do.call(cbind, lapply(samps, function(x) x$elpd))
   w_hat <- loo::stacking_weights(elpd_mat)
@@ -147,7 +196,7 @@ cm_stacking <- function(y, X, S, N.samp, MC.samp = 200,
   
   stack_out <- as.matrix(do.call(rbind, lapply(mod_params_list, unlist)))
   stack_out <- cbind(stack_out, round(as.numeric(w_hat), 2))
-  colnames(stack_out) = c("phi", "epsilon", "nu.xi", "nu.beta", "nu.z", "weight")
+  colnames(stack_out) = c("phi", "smooth", "epsilon", "nu.xi", "nu.beta", "nu.z", "weight")
   rownames(stack_out) = paste("Model", 1:nrow(stack_out))
   if(print_stackweights){
     cat("MODEL WEIGHTS:\n")
