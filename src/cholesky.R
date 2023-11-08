@@ -24,7 +24,7 @@ cholesky_CV <- function(L_full, ids){
 }
 
 # finds Cholesky of A + M'M with rank updates
-### SLOW! Can we bypass for loop?
+### SLOW! Can we bypass `for` loop?
 chol_rankupdate <- function(cholA, M){
   for(i in 1:nrow(M)){
     cholA <- cholupdate(cholA, M[i, ])
