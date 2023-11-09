@@ -3,9 +3,10 @@
 # S = data.frame(x = c(0.1, 0.2, 0.3), y = c(0.5, 0.9, 0.2))
 # phi = 3, nu_xi = 0, nu_beta = 0.1, nu_z = 0.1, alpha_epsilon = 0.5
 
-sampler_poisson <- function(n, p, y, X, 
-                            XtXplusIchol, L_z,
-                            nu_xi, nu_beta, nu_z, alpha_epsilon){
+sampler_GCM <- function(n, p, y, X, family,
+                        n_binom = NULL,
+                        XtXplusIchol, L_z,
+                        nu_xi, nu_beta, nu_z, alpha_epsilon){
   if(nu_xi == 0){
     sigmasq_xi <- 1
     w_xi <- rnorm(n)
@@ -16,9 +17,18 @@ sampler_poisson <- function(n, p, y, X,
   sigmasq_beta <- 1/rgamma(1, 0.5 * nu_beta, 0.5 * nu_beta)
   sigmasq_z <- 1/rgamma(1, 0.5 * nu_z, 0.5 * nu_z)
   
-  w_y <- sapply(1:n, function(x) rDY(n.samples = 1, 
-                                     alpha = y[x] + alpha_epsilon, 
-                                     kappa = 1, psi = "psi3"))
+  if(family == "poisson"){
+    w_y <- sapply(1:n, function(x) rDY(n.samples = 1, 
+                                       alpha = y[x] + alpha_epsilon, 
+                                       kappa = 1, psi = "psi3"))
+  }else if(family == "binomial"){
+    if(is.null(n_binom)){stop("Supply n_binom.")}
+    w_y <- sapply(1:n, function(x) rDY(n.samples = 1, 
+                                       alpha = y[x] + alpha_epsilon, 
+                                       kappa = n_binom[x] + 2*alpha_epsilon, 
+                                       psi = "psi2"))
+  }else{ stop("Incorrect family.") }
+  
   w_beta <- rnorm(p) * sqrt(sigmasq_beta)
   w_z <- rnorm(n) * sqrt(sigmasq_z)
   w_z <- as.numeric(crossprod(L_z, w_z))
@@ -30,7 +40,9 @@ sampler_poisson <- function(n, p, y, X,
 elpd_GCM <- function(y_train, X_train, y_pred, X_pred, N.samp,
                      J_tilde, V_tilde, V_z_train, 
                      L_z_train = NULL,
-                     family = "poisson",
+                     family,
+                     n_binom_train = NULL,
+                     n_binom_pred = NULL,
                      beta_prior = "gaussian",
                      spatial_prior = "gaussian",
                      mod_params,
@@ -51,13 +63,15 @@ elpd_GCM <- function(y_train, X_train, y_pred, X_pred, N.samp,
   XtXplusIchol <- chol(XtXplusI)
   
   gamma_train <- sapply(1:N.samp, function(x)  
-    sampler_poisson(n = n, p = p, y = y_train, X = X_train, 
-                    XtXplusIchol = XtXplusIchol, 
-                    L_z = L_z_train,
-                    nu_xi = nu_xi, 
-                    nu_beta = nu_beta, 
-                    nu_z = nu_z, 
-                    alpha_epsilon = alpha_epsilon))
+    sampler_GCM(n = n, p = p, y = y_train, X = X_train, 
+                family = family,
+                n_binom = n_binom_train,
+                XtXplusIchol = XtXplusIchol, 
+                L_z = L_z_train,
+                nu_xi = nu_xi, 
+                nu_beta = nu_beta, 
+                nu_z = nu_z, 
+                alpha_epsilon = alpha_epsilon))
   
   samp_beta <- gamma_train[(n+1):(n+p), ]
   samp_z <- gamma_train[(n+p+1):(2*n+p), ]
@@ -66,8 +80,14 @@ elpd_GCM <- function(y_train, X_train, y_pred, X_pred, N.samp,
                        J = J_tilde, cholV = L_z_train,
                        V_tilde = V_tilde, nu_z = nu_z)
   mu <- exp(X_pred %*% samp_beta + z_tilde)
-  elpd_mat <- dpois(y_pred, mu, log = FALSE)
-  elpd <- apply(elpd_mat, 1, mean)
+  if(family == "poisson"){
+    elpd_mat <- dpois(y_pred, mu, log = FALSE)
+  }else if(family == "binomial"){
+    prob <- ilogit(mu)
+    elpd_mat <- dbinom(y_pred, n_binom_pred, prob, log = FALSE)
+  }
+  
+  elpd <- apply(elpd_mat, 1, function(x) mean(x, na.rm = FALSE))
   
   return(log(elpd))
 }

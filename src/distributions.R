@@ -38,7 +38,10 @@ rDY <- function(n.samples, alpha, kappa, psi){
     if(kappa > alpha && alpha > 0){
       w <- rbeta(n = n.samples, shape1 = alpha, shape2 = kappa - alpha)
       return(log(w / (1 - w)))
-    }else stop("Invalid DY parameters input (psi2).")
+    }else{
+      browser()
+      stop("Invalid DY parameters input (psi2).")
+    } 
   }else if(psi == "psi3"){
     if(alpha > 0 && kappa > 0){
       w <- rgamma(n = n.samples, shape = alpha, rate = kappa)
