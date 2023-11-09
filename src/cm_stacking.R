@@ -20,7 +20,8 @@ create_model_list <- function(G_decay, G_smoothness, G_epsilon, G_nuxi = 0,
 
 CV_posterior_sampler <- function(y, X, N.samp,
                                  V_z_full, L_z_full = NULL,
-                                 family = "poisson",
+                                 family,
+                                 n_binom = NULL,
                                  beta_prior = "gaussian",
                                  spatial_prior = "gaussian",
                                  mod_params,
@@ -49,6 +50,8 @@ CV_posterior_sampler <- function(y, X, N.samp,
              N.samp = N.samp,
              mod_params = mod_params,
              family = family,
+             n_binom_train = n_binom[-partition_list[[x]]],
+             n_binom_pred = n_binom[partition_list[[x]]],
              beta_prior = beta_prior,
              spatial_prior = spatial_prior, Rfastparallel = Rfastparallel),
     mc.cores = ncores)
@@ -89,7 +92,8 @@ CV_posterior_sampler <- function(y, X, N.samp,
 posterior_and_elpd <- function(y, X, N.samp, MC.samp,
                                distmat,
                                spCov = "matern",
-                               family = "poisson", 
+                               n_binom = NULL,
+                               family, 
                                beta_prior = "gaussian",
                                spatial_prior = "gaussian",
                                mod_params,
@@ -119,18 +123,21 @@ posterior_and_elpd <- function(y, X, N.samp, MC.samp,
   XtXplusI <- crossprod(X) / 3 + diag(p)
   XtXplusIchol <- chol(XtXplusI)
   
-  gamma <- sapply(1:N.samp, function(x) sampler_poisson(n = n, p = p, y = y, X = X, 
-                                                        XtXplusIchol = XtXplusIchol,
-                                                        L_z = L_z,
-                                                        nu_xi = nu_xi, 
-                                                        nu_beta = nu_beta, 
-                                                        nu_z = nu_z, 
-                                                        alpha_epsilon = alpha_epsilon))
+  gamma <- sapply(1:N.samp, function(x) sampler_GCM(n = n, p = p, y = y, X = X,
+                                                    family = family,
+                                                    n_binom = n_binom,
+                                                    XtXplusIchol = XtXplusIchol,
+                                                    L_z = L_z,
+                                                    nu_xi = nu_xi, 
+                                                    nu_beta = nu_beta, 
+                                                    nu_z = nu_z, 
+                                                    alpha_epsilon = alpha_epsilon))
   
   # K-fold CV to find elpd
   elpd <- CV_posterior_sampler(y = y, X = X, N.samp = MC.samp,
                                V_z_full = V_z, L_z_full = L_z,
                                family = family,
+                               n_binom = n_binom,
                                beta_prior = beta_prior,
                                spatial_prior = spatial_prior,
                                mod_params = mod_params,
@@ -146,6 +153,7 @@ posterior_and_elpd <- function(y, X, N.samp, MC.samp,
 
 spGLMM_stack <- function(y, X, S, N.samp, MC.samp = 200,
                          family = "poisson",
+                         n_binom = NULL,
                          spCov = "matern",
                          beta_prior = "gaussian",
                          spatial_prior = "gaussian",
@@ -161,6 +169,7 @@ spGLMM_stack <- function(y, X, S, N.samp, MC.samp = 200,
   n <- length(y)
   permut <- sample(1:n)
   y <- y[permut]
+  if(!is.null(n_binom)){ n_binom <- n_binom[permut] }
   X <- X[permut, ]
   S <- S[permut, ]
   
@@ -171,6 +180,7 @@ spGLMM_stack <- function(y, X, S, N.samp, MC.samp = 200,
                        spCov = spCov,
                        N.samp = N.samp, MC.samp = MC.samp,
                        family = family,
+                       n_binom = n_binom,
                        beta_prior = beta_prior,
                        spatial_prior = spatial_prior,
                        mod_params = mod_params_list[[x]],

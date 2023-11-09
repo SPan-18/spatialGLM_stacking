@@ -20,3 +20,37 @@ sim_count <- function(n, beta, phi){
 
 # TEST
 # sim_count(10, c(3, 1, -0.4), 3)
+
+ilogit <- function(x){
+  return(1.0 / (1.0 + exp(- x)))
+}
+
+sim_binom <- function(n, n_binom, beta, phi){
+  S <- data.frame(s1 = c(0,0,1,1,runif(n - 4, 0, 1)),
+                  s2 = c(0,1,0,1,runif(n - 4, 0, 1)))
+  p <- length(beta)
+  X <- cbind(rep(1, n), sapply(1:(p-1), function(x) rnorm(n)))
+  V <- as.matrix(dist(S))
+  z <- MASS::mvrnorm(n = 1, mu = rep(0,n), 
+                     Sigma = 0.4 * exp(- phi * V))
+  mu <- X %*% beta + z
+  prob <- ilogit(mu)
+  y2 <- rpois(n, n_binom)
+  dat <- cbind(S, X, y1 = rbinom(n, y2, prob = prob), y2 = y2, z = z)
+  names(dat) = c("s1", "s2", paste("x", 0:(p-1), sep = ""), "y1", "y2", "z")
+  return(dat)
+}
+
+sim_binom_nonsp <- function(n, n_binom, beta){
+  p <- length(beta)
+  X <- cbind(rep(1, n), sapply(1:(p-1), function(x) rnorm(n)))
+  mu <- X %*% beta
+  prob <- ilogit(mu)
+  dat <- cbind(X, y = rbinom(n, rep(n_binom, n), prob = prob))
+  colnames(dat) = c(paste("x", 0:(p-1), sep = ""), "y")
+  return(as.data.frame(dat))
+}
+
+# TEST
+# simdat = sim_binom(n = 1000, n_binom = 20, beta = c(1, -0.5), phi = 3.5)
+# write.csv(simdat, "../data/sim_binom1000.csv", row.names = FALSE)
