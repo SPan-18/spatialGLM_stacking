@@ -151,7 +151,7 @@ posterior_and_elpd <- function(y, X, N.samp, MC.samp,
 
 # stacking using K-fold cross-validation
 
-spGLMM_stack <- function(y, X, S, N.samp, MC.samp = 200,
+spGLM_stack <- function(y, X, S, N.samp, MC.samp = 200,
                          family = "poisson",
                          n_binom = NULL,
                          spCov = "matern",
