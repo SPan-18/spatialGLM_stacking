@@ -1,4 +1,4 @@
-# predictive spatial process
+# (MVT) predictive spatial process multivariate t
 
 predict_z <- function(z_post, J, cholV, V_tilde, nu_z, 
                       Rfast_parallel = FALSE){
