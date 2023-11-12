@@ -41,12 +41,17 @@ id_partition <- function(N, K, random = TRUE){
   return(idlist)
 }
 
-create_model_list <- function(G_phi, G_alphaepsilon, G_nuxi = 0,
-                              G_nubeta = 0.01, G_nuz = 0.01){
-  models <- expand.grid(G_phi, G_alphaepsilon, G_nuxi, G_nubeta, G_nuz)
-  names(models) <- c("phi", "alpha_epsilon", "nu_xi", "nu_beta", "nu_z")
+# G_phi <- c(2, 3)
+# G_alphaepsilon <- c(0.5, 0.75)
+# model_list <- create_model_list(G_phi, G_alphaepsilon)
+
+create_model_list <- function(G_decay, G_smoothness, G_epsilon, G_nuxi = 0,
+                              G_nubeta = 1, G_nuz = 1){
+  models <- expand.grid(G_decay, G_smoothness, G_epsilon, G_nuxi, G_nubeta, G_nuz)
+  names(models) <- c("phi", "smooth", "alpha_epsilon", "nu_xi", "nu_beta", "nu_z")
   model_list <- lapply(1:nrow(models), function(x){
     return(list(phi = models[x, "phi"],
+                nu_matern = models[x, "smooth"],
                 alpha_epsilon = models[x, "alpha_epsilon"],
                 nu_xi = models[x, "nu_xi"],
                 nu_beta = models[x, "nu_beta"],

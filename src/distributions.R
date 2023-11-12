@@ -39,7 +39,6 @@ rDY <- function(n.samples, alpha, kappa, psi){
       w <- rbeta(n = n.samples, shape1 = alpha, shape2 = kappa - alpha)
       return(log(w / (1 - w)))
     }else{
-      browser()
       stop("Invalid DY parameters input (psi2).")
     } 
   }else if(psi == "psi3"){
