@@ -5,7 +5,7 @@ source("../src/runsrc.R")
 simdat <- read.csv("../data/sim_count1000.csv")
 
 # Test on rows 1:100
-simdat <- simdat[1:500, ]
+simdat <- simdat[1:100, ]
 y <- as.numeric(simdat$y)
 X <- as.matrix(simdat[, grep("x", names(simdat))])
 S <- as.matrix(simdat[, c("s1", "s2")])
