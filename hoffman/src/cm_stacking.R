@@ -16,8 +16,7 @@ CV_posterior_sampler <- function(y, X, N.samp,
   # V_z_full <- exp(- phi * distmat)
   # L_z_full <- Rfast::cholesky(V_z_full, parallel = Rfast_parallel)
   
-  ncores <- 9
-  CV_samps <- mclapply(1:length(partition_list), function(x)
+  CV_samps <- lapply(1:length(partition_list), function(x)
     elpd_GCM(y_train = y[-partition_list[[x]]],
              X_train = X[-partition_list[[x]], ],
              y_pred = y[partition_list[[x]]],
@@ -35,8 +34,7 @@ CV_posterior_sampler <- function(y, X, N.samp,
              n_binom_train = n_binom[-partition_list[[x]]],
              n_binom_pred = n_binom[partition_list[[x]]],
              beta_prior = beta_prior,
-             spatial_prior = spatial_prior, Rfastparallel = Rfastparallel),
-    mc.cores = ncores)
+             spatial_prior = spatial_prior, Rfastparallel = Rfastparallel))
   
   # socket cluster approach
   # cl <- makeCluster(ncores - 1)
@@ -156,8 +154,8 @@ spGLM_stack <- function(y, X, S, N.samp, MC.samp = 200,
   S <- S[permut, ]
   
   t_start <- Sys.time()
-  # ncores <- detectCores()
-  samps <- lapply(1:length(mod_params_list), function(x)
+  ncores <- detectCores()
+  samps <- mclapply(1:length(mod_params_list), function(x)
     posterior_and_elpd(y = y, X = X,
                        distmat = distmat,
                        spCov = spCov,
@@ -167,7 +165,8 @@ spGLM_stack <- function(y, X, S, N.samp, MC.samp = 200,
                        beta_prior = beta_prior,
                        spatial_prior = spatial_prior,
                        mod_params = mod_params_list[[x]],
-                       CV_K = CV_fold, Rfastparallel = Rfastparallel))
+                       CV_K = CV_fold, Rfastparallel = Rfastparallel),
+    mc.cores = ncores)
   
   # cl <- makeCluster(18)
   # samps <- parLapply(cl, 1:length(mod_params_list), function(x)
