@@ -1,7 +1,7 @@
 # Load required libraries
 library("MASS")
 suppressPackageStartupMessages(library("Rfast"))
-library("fastmatrix")
+# library("fastmatrix")
 library("parallel")
 library("progress")
 suppressPackageStartupMessages(library("loo"))
