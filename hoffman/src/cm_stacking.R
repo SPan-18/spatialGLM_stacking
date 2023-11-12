@@ -155,22 +155,8 @@ spGLM_stack <- function(y, X, S, N.samp, MC.samp = 200,
   S <- S[permut, ]
   
   t_start <- Sys.time()
-  ncores <- detectCores()
-  samps <- mclapply(1:length(mod_params_list), function(x)
-    posterior_and_elpd(y = y, X = X,
-                       distmat = distmat,
-                       spCov = spCov,
-                       N.samp = N.samp, MC.samp = MC.samp,
-                       family = family,
-                       n_binom = n_binom,
-                       beta_prior = beta_prior,
-                       spatial_prior = spatial_prior,
-                       mod_params = mod_params_list[[x]],
-                       CV_K = CV_fold, Rfastparallel = Rfastparallel),
-    mc.cores = ncores)
-  
-  # cl <- makeCluster(8, "MPI")
-  # samps <- parLapply(cl, 1:length(mod_params_list), function(x)
+  # ncores <- detectCores()
+  # samps <- mclapply(1:length(mod_params_list), function(x)
   #   posterior_and_elpd(y = y, X = X,
   #                      distmat = distmat,
   #                      spCov = spCov,
@@ -180,8 +166,22 @@ spGLM_stack <- function(y, X, S, N.samp, MC.samp = 200,
   #                      beta_prior = beta_prior,
   #                      spatial_prior = spatial_prior,
   #                      mod_params = mod_params_list[[x]],
-  #                      CV_K = CV_fold, Rfastparallel = Rfastparallel))
-  # stopCluster(cl)
+  #                      CV_K = CV_fold, Rfastparallel = Rfastparallel),
+  #   mc.cores = ncores)
+  
+  cl <- makeCluster(18)
+  samps <- parLapply(cl, 1:length(mod_params_list), function(x)
+    posterior_and_elpd(y = y, X = X,
+                       distmat = distmat,
+                       spCov = spCov,
+                       N.samp = N.samp, MC.samp = MC.samp,
+                       family = family,
+                       n_binom = n_binom,
+                       beta_prior = beta_prior,
+                       spatial_prior = spatial_prior,
+                       mod_params = mod_params_list[[x]],
+                       CV_K = CV_fold, Rfastparallel = Rfastparallel))
+  stopCluster(cl)
   
   # samps <- vector(mode = "list", length = length(mod_params_list))
   # for(x in 1:length(mod_params_list)){
