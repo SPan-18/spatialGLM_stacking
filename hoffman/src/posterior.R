@@ -58,7 +58,7 @@ elpd_GCM <- function(y_train, X_train, y_pred, X_pred, N.samp,
   alpha_epsilon <- mod_params$alpha_epsilon
   
   # attack here
-  if(is.null(L_z_train)) L_z_train <- Rfast::cholesky(V_z_train, parallel = Rfastparallel)
+  # if(is.null(L_z_train)) L_z_train <- Rfast::cholesky(V_z_train, parallel = Rfastparallel)
   XtXplusI <- crossprod(X_train) / 3 + diag(p)
   XtXplusIchol <- chol(XtXplusI)
   

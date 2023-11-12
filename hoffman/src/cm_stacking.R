@@ -100,6 +100,7 @@ posterior_and_elpd <- function(y, X, N.samp, MC.samp,
   }
   
   L_z <- Rfast::cholesky(V_z, parallel = Rfastparallel)
+  # L_z <- chol(V_z)
   XtXplusI <- crossprod(X) / 3 + diag(p)
   XtXplusIchol <- chol(XtXplusI)
   
