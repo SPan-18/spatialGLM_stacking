@@ -14,6 +14,7 @@ col.RdBu <- colorRampPalette(c("blue", "white", "red"))
 
 pointref_plot=function(tab, colname, 
                 x_lim = c(0,1), y_lim = c(0,1), 
+                title = NULL,
                 legend_title = "z"){
   
   surf <- mba.surf(tab[,c("s1","s2",colname)], 
@@ -24,7 +25,7 @@ pointref_plot=function(tab, colname,
   surf_df <- na.omit(surf_df)
   names(surf_df) <- c("x", "y", "z")
   
-  ggplot(surf_df, aes(x = x, y = y)) +
+  plot <- ggplot(surf_df, aes(x = x, y = y)) +
     geom_raster(aes(fill = z)) +
     # scale_fill_gradientn(colours = col.br(100)) +
     # scale_fill_gradientn(colours = col.RdBu(100)) +
@@ -42,6 +43,13 @@ pointref_plot=function(tab, colname,
       panel.grid.minor = element_blank(),
       # panel.border = element_blank(),
       aspect.ratio = 1)
+  
+  if(!is.null(title)){
+    plot <- plot + labs(title = title)  +
+      theme(plot.title = element_text(hjust = 0.5))
+  }
+  
+  plot
 }
 
 # leg_title <- TeX('$z(s)$')

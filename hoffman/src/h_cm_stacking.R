@@ -16,7 +16,8 @@ CV_posterior_sampler <- function(y, X, N.samp,
   # V_z_full <- exp(- phi * distmat)
   # L_z_full <- Rfast::cholesky(V_z_full, parallel = Rfast_parallel)
   
-  CV_samps <- lapply(1:length(partition_list), function(x)
+  ncores <- detectCores()
+  CV_samps <- mclapply(1:length(partition_list), function(x)
     elpd_GCM(y_train = y[-partition_list[[x]]],
              X_train = X[-partition_list[[x]], ],
              y_pred = y[partition_list[[x]]],
@@ -34,31 +35,8 @@ CV_posterior_sampler <- function(y, X, N.samp,
              n_binom_train = n_binom[-partition_list[[x]]],
              n_binom_pred = n_binom[partition_list[[x]]],
              beta_prior = beta_prior,
-             spatial_prior = spatial_prior, Rfastparallel = Rfastparallel))
-  
-  # socket cluster approach
-  # cl <- makeCluster(ncores - 1)
-  # CV_samps <- parLapply(cl, 1:length(partition_list), function(x)
-  #   elpd_GCM(y_train = y[-partition_list[[x]]], 
-  #            X_train = X[-partition_list[[x]], ], 
-  #            y_pred = y[partition_list[[x]]], 
-  #            X_pred = X[partition_list[[x]], ], 
-  #            J_tilde = V_z_full[- partition_list[[x]], 
-  #                               partition_list[[x]]],
-  #            V_tilde = V_z_full[partition_list[[x]], 
-  #                               partition_list[[x]]],
-  #            V_z_train = V_z_full[-partition_list[[x]], 
-  #                                 -partition_list[[x]]], 
-  #            L_z_train = cholesky_CV(L_z_full, partition_list[[x]]),
-  #            N.samp = N.samp, 
-  #            mod_params = mod_params,
-  #            family = family,
-  #            beta_prior = beta_prior, 
-  #            spatial_prior = spatial_prior, Rfastparallel = Rfastparallel))
-  # clusterExport(cl, 'y', 'X', 'V_z_full', 'L_z_full', 
-  #               'N.samp', 'mod_params', 'family', 'beta_prior', 
-  #               'spatial_prior', 'Rfastparallel')
-  # stopCluster(cl)
+             spatial_prior = spatial_prior, Rfastparallel = Rfastparallel),
+    mc.cores = ncores)
   
   elpd <- array(dim = n)
   for(k in 1:CV_K){
@@ -100,7 +78,6 @@ posterior_and_elpd <- function(y, X, N.samp, MC.samp,
   }
   
   L_z <- Rfast::cholesky(V_z, parallel = Rfastparallel)
-  # L_z <- chol(V_z)
   XtXplusI <- crossprod(X) / 3 + diag(p)
   XtXplusIchol <- chol(XtXplusI)
   
@@ -155,8 +132,7 @@ spGLM_stack <- function(y, X, S, N.samp, MC.samp = 200,
   S <- S[permut, ]
   
   t_start <- Sys.time()
-  ncores <- detectCores()
-  samps <- mclapply(1:length(mod_params_list), function(x)
+  samps <- lapply(1:length(mod_params_list), function(x)
     posterior_and_elpd(y = y, X = X,
                        distmat = distmat,
                        spCov = spCov,
@@ -166,22 +142,7 @@ spGLM_stack <- function(y, X, S, N.samp, MC.samp = 200,
                        beta_prior = beta_prior,
                        spatial_prior = spatial_prior,
                        mod_params = mod_params_list[[x]],
-                       CV_K = CV_fold, Rfastparallel = Rfastparallel),
-    mc.cores = ncores)
-  
-  # cl <- makeCluster(18)
-  # samps <- parLapply(cl, 1:length(mod_params_list), function(x)
-  #   posterior_and_elpd(y = y, X = X,
-  #                      distmat = distmat,
-  #                      spCov = spCov,
-  #                      N.samp = N.samp, MC.samp = MC.samp,
-  #                      family = family,
-  #                      n_binom = n_binom,
-  #                      beta_prior = beta_prior,
-  #                      spatial_prior = spatial_prior,
-  #                      mod_params = mod_params_list[[x]],
-  #                      CV_K = CV_fold, Rfastparallel = Rfastparallel))
-  # stopCluster(cl)
+                       CV_K = CV_fold, Rfastparallel = Rfastparallel))
   
   # samps <- vector(mode = "list", length = length(mod_params_list))
   # for(x in 1:length(mod_params_list)){
@@ -216,6 +177,100 @@ spGLM_stack <- function(y, X, S, N.samp, MC.samp = 200,
   }
   
   return(list(models = samps, weights = w_hat))
+}
+
+spGLM_onlystack <- function(y, X, S, MC.samp = 200,
+                            family = "poisson",
+                            n_binom = NULL,
+                            spCov = "matern",
+                            beta_prior = "gaussian",
+                            spatial_prior = "gaussian",
+                            mod_params_list,
+                            CV_fold = 10,
+                            Rfastparallel = FALSE,
+                            verbose = TRUE,
+                            print_stackweights = TRUE){
+  
+  distmat <- Rfast::Dist(S)
+  n <- length(y)
+  permut <- sample(1:n)
+  y <- y[permut]
+  if(!is.null(n_binom)){ n_binom <- n_binom[permut] }
+  X <- X[permut, ]
+  S <- S[permut, ]
+  
+  t_start <- Sys.time()
+  elpd_list <- lapply(1:length(mod_params_list), function(x)
+    CV_elpd(y = y, X = X,
+            distmat = distmat,
+            spCov = spCov,
+            MC.samp = MC.samp,
+            family = family,
+            n_binom = n_binom,
+            beta_prior = beta_prior,
+            spatial_prior = spatial_prior,
+            mod_params = mod_params_list[[x]],
+            CV_K = CV_fold, Rfastparallel = Rfastparallel))
+  
+  elpd_mat <- do.call(cbind, elpd_list)
+  w_hat <- loo::stacking_weights(elpd_mat)
+  t_end <- Sys.time()
+  runtime <- difftime(t_end, t_start)
+  if(verbose) cat("\nRUNTIME:", round(runtime, 2), units(runtime), ".\n\n")
+  
+  if(verbose){
+    stack_out <- as.matrix(do.call(rbind, lapply(mod_params_list, unlist)))
+    stack_out <- cbind(stack_out, round(as.numeric(w_hat), 2))
+    colnames(stack_out) = c("phi", "smooth", "epsilon", "nu.xi", "nu.beta", "nu.z", "weight")
+    rownames(stack_out) = paste("Model", 1:nrow(stack_out))
+    if(print_stackweights){
+      cat("MODEL WEIGHTS:\n")
+      print(knitr::kable(stack_out))
+    } 
+  }
+  
+  return(list(elpd = elpd_mat[order(permut), ],
+              weights = w_hat))
+}
+
+CV_elpd <- function(y, X, MC.samp,
+                    distmat,
+                    spCov = "matern",
+                    n_binom = NULL,
+                    family, 
+                    beta_prior = "gaussian",
+                    spatial_prior = "gaussian",
+                    mod_params,
+                    CV_K = 10,
+                    Rfastparallel = FALSE){
+  
+  phi <- mod_params$phi
+  nu_xi <- mod_params$nu_xi
+  nu_beta <- mod_params$nu_beta
+  nu_z <- mod_params$nu_z
+  alpha_epsilon <- mod_params$alpha_epsilon
+  nu_matern <- mod_params$nu_matern
+  
+  if(spCov == "exponential"){
+    V_z <- exp(- phi * distmat)
+  }else if(spCov == "matern"){
+    V_z <- matern(u = distmat, phi = 1/phi, kappa = nu_matern)
+  }else{
+    V_z <- geoR::cov.spatial(distmat, cov.model = spCov, 
+                             cov.pars = c(1, 1/phi), kappa = nu_matern)
+  }
+  L_z <- Rfast::cholesky(V_z, parallel = Rfastparallel)
+  
+  elpd <- CV_posterior_sampler(y = y, X = X, N.samp = MC.samp,
+                               V_z_full = V_z, L_z_full = L_z,
+                               family = family,
+                               n_binom = n_binom,
+                               beta_prior = beta_prior,
+                               spatial_prior = spatial_prior,
+                               mod_params = mod_params,
+                               CV_K = CV_K,
+                               Rfastparallel = Rfastparallel)
+  return(elpd)
 }
 
 postrunsampler <- function(out, N.samp){

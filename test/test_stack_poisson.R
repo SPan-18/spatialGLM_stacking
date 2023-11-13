@@ -43,6 +43,7 @@ simdat$yhat <- y.hat.mu
 # simdat$postcred2_z <- apply(post_z, 1, function(x) quantile(x, 0.975))
 # 
 leg_title <- TeX('$z(s)$')
+# title <- TeX('$n = 100$')
 p1 <- pointref_plot(simdat, "z", legend_title = leg_title)
 # p2 <- pointref_plot(simdat, "postmean_z", legend_title = leg_title)
 # p3 <- pointref_plot(simdat, "postsd_z", legend_title = leg_title)

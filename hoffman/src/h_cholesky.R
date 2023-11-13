@@ -10,7 +10,6 @@ cholesky_CV <- function(L_full, ids){
     L23 <- L_full[ids, (ids[n_k] + 1):n]
     # chol_k <- chol_rankupdate(L33, L23)
     chol_k <- Rfast::cholesky(crossprod(L33) + crossprod(L23))
-    # chol_k <- chol(crossprod(L33) + crossprod(L23))
   }else{
     chol_k <- matrix(0, n - n_k, n - n_k)
     chol_k[1:(ids[1] - 1), 1:(ids[1] - 1)] = L_full[1:(ids[1] - 1), 1:(ids[1] - 1)]
@@ -20,7 +19,6 @@ cholesky_CV <- function(L_full, ids){
     L23 <- L_full[ids, (ids[n_k] + 1):n]
     # chol_k[(ids[1]:(n - n_k)), (ids[1]:(n - n_k))] = chol_rankupdate(L33, L23)
     chol_k[(ids[1]:(n - n_k)), (ids[1]:(n - n_k))] <- Rfast::cholesky(crossprod(L33) + crossprod(L23))
-    # chol_k[(ids[1]:(n - n_k)), (ids[1]:(n - n_k))] <- chol(crossprod(L33) + crossprod(L23))
   }
   return(chol_k)
 }

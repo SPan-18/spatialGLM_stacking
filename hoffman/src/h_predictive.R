@@ -15,7 +15,6 @@ predict_z <- function(z_post, J, cholV, V_tilde, nu_z,
   temp <- crossprod(temp)
   temp <- as.matrix(V_tilde) - temp
   temp <- Rfast::cholesky(temp, parallel = Rfast_parallel)
-  # temp <- chol(temp)
   z_tilde <- z_tilde + crossprod(temp, w)
   return(z_tilde)
 }
