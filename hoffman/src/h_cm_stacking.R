@@ -16,8 +16,8 @@ CV_posterior_sampler <- function(y, X, N.samp,
   # V_z_full <- exp(- phi * distmat)
   # L_z_full <- Rfast::cholesky(V_z_full, parallel = Rfast_parallel)
   
-  # ncores <- detectCores()
-  CV_samps <- lapply(1:length(partition_list), function(x)
+  ncores <- detectCores()
+  CV_samps <- mclapply(1:length(partition_list), function(x)
     elpd_GCM(y_train = y[-partition_list[[x]]],
              X_train = X[-partition_list[[x]], ],
              y_pred = y[partition_list[[x]]],
@@ -35,7 +35,8 @@ CV_posterior_sampler <- function(y, X, N.samp,
              n_binom_train = n_binom[-partition_list[[x]]],
              n_binom_pred = n_binom[partition_list[[x]]],
              beta_prior = beta_prior,
-             spatial_prior = spatial_prior, Rfastparallel = Rfastparallel))
+             spatial_prior = spatial_prior, Rfastparallel = Rfastparallel),
+    mc.cores = ncores)
   
   elpd <- array(dim = n)
   for(k in 1:CV_K){
@@ -131,7 +132,7 @@ spGLM_stack <- function(y, X, S, N.samp, MC.samp = 200,
   S <- S[permut, ]
   
   t_start <- Sys.time()
-  samps <- mclapply(1:length(mod_params_list), function(x)
+  samps <- lapply(1:length(mod_params_list), function(x)
     posterior_and_elpd(y = y, X = X,
                        distmat = distmat,
                        spCov = spCov,
@@ -141,8 +142,7 @@ spGLM_stack <- function(y, X, S, N.samp, MC.samp = 200,
                        beta_prior = beta_prior,
                        spatial_prior = spatial_prior,
                        mod_params = mod_params_list[[x]],
-                       CV_K = CV_fold, Rfastparallel = Rfastparallel),
-    mc.cores = 8)
+                       CV_K = CV_fold, Rfastparallel = Rfastparallel))
   
   # samps <- vector(mode = "list", length = length(mod_params_list))
   # for(x in 1:length(mod_params_list)){
@@ -162,14 +162,16 @@ spGLM_stack <- function(y, X, S, N.samp, MC.samp = 200,
   runtime <- difftime(t_end, t_start)
   if(verbose) cat("\nRUNTIME:", round(runtime, 2), units(runtime), ".\n\n")
   
-  stack_out <- as.matrix(do.call(rbind, lapply(mod_params_list, unlist)))
-  stack_out <- cbind(stack_out, round(as.numeric(w_hat), 2))
-  colnames(stack_out) = c("phi", "smooth", "epsilon", "nu.xi", "nu.beta", "nu.z", "weight")
-  rownames(stack_out) = paste("Model", 1:nrow(stack_out))
-  if(print_stackweights){
-    cat("MODEL WEIGHTS:\n")
-    print(knitr::kable(stack_out))
-  } 
+  if(verbose){
+    stack_out <- as.matrix(do.call(rbind, lapply(mod_params_list, unlist)))
+    stack_out <- cbind(stack_out, round(as.numeric(w_hat), 2))
+    colnames(stack_out) = c("phi", "smooth", "epsilon", "nu.xi", "nu.beta", "nu.z", "weight")
+    rownames(stack_out) = paste("Model", 1:nrow(stack_out))
+    if(print_stackweights){
+      cat("MODEL WEIGHTS:\n")
+      print(knitr::kable(stack_out))
+    } 
+  }
   
   for(i in 1:length(samps)){
     samps[[i]]$z <- samps[[i]]$z[order(permut), ]
