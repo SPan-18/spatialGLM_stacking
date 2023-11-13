@@ -17,7 +17,7 @@ CV_posterior_sampler <- function(y, X, N.samp,
   # L_z_full <- Rfast::cholesky(V_z_full, parallel = Rfast_parallel)
   
   # ncores <- detectCores()
-  CV_samps <- mclapply(1:length(partition_list), function(x)
+  CV_samps <- lapply(1:length(partition_list), function(x)
     elpd_GCM(y_train = y[-partition_list[[x]]],
              X_train = X[-partition_list[[x]], ],
              y_pred = y[partition_list[[x]]],
@@ -35,8 +35,7 @@ CV_posterior_sampler <- function(y, X, N.samp,
              n_binom_train = n_binom[-partition_list[[x]]],
              n_binom_pred = n_binom[partition_list[[x]]],
              beta_prior = beta_prior,
-             spatial_prior = spatial_prior, Rfastparallel = Rfastparallel),
-    mc.cores = 5)
+             spatial_prior = spatial_prior, Rfastparallel = Rfastparallel))
   
   elpd <- array(dim = n)
   for(k in 1:CV_K){
