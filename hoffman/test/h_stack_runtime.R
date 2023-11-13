@@ -26,7 +26,7 @@ for(i in 1:n_run){
   X <- as.matrix(simdat[, grep("x", names(simdat))])
   S <- as.matrix(simdat[, c("s1", "s2")])
   
-  cat("Running Model", i, "...\n")
+  cat("Running Model", i, "...")
   t1 <- Sys.time()
   m_out <- spGLM_stack(y = y, X = X, S = S, N.samp = n_postsamp,
                        family = "poisson",
@@ -34,7 +34,9 @@ for(i in 1:n_run){
                        mod_params_list = mod_list,
                        verbose = FALSE)
   t2 <- Sys.time()
-  runtime[i, 2] <- t2-t1
+  rt <- difftime(t2, t1, units = "secs")
+  runtime[i, 2] <- rt
+  cat("Took", rt, "\n")
 }
 
 write.csv(runtime, "stack_runtime.csv", row.names = FALSE)
