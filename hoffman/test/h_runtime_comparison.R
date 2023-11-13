@@ -30,7 +30,7 @@ for(i in 1:n_run){
                cov.model="exponential", verbose=TRUE, n.report=10)
   t2 <- Sys.time()
   runtime[i, 2] <- t2-t1
-  cat("n = ", nseq[i], " time = ", t2-t1, "\n")
+  # cat("n = ", nseq[i], " time = ", t2-t1, "\n")
 }
 
-write.csv(runtime, "spBayes_runtime.txt")
+write.csv(runtime, "spBayes_runtime.txt", row.names = FALSE)
