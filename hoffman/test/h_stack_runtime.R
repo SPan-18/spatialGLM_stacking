@@ -26,6 +26,7 @@ for(i in 1:n_run){
   X <- as.matrix(simdat[, grep("x", names(simdat))])
   S <- as.matrix(simdat[, c("s1", "s2")])
   
+  cat("Running Model", i, "...\n")
   t1 <- Sys.time()
   m_out <- spGLM_stack(y = y, X = X, S = S, N.samp = n_postsamp,
                        family = "poisson",
