@@ -4,7 +4,7 @@
 #$ -o joblog.$JOB_ID #creates a file called joblog.jobidnumber to write to.
 #$ -j y
 #$ -l h_data=2G,h_rt=0:30:00 #requests 30 minutes, 2GB of data (per core)
-#$ -pe shared 8 #requests 2 cores
+#$ -pe shared 5 #requests 2 cores
 # Email address to notify
 #$ -M $USER@mail #don't change this line, finds your email in the system
 # Notify when
