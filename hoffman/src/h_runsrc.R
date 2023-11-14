@@ -2,7 +2,7 @@
 library("MASS")
 suppressPackageStartupMessages(library("Rfast"))
 # library("fastmatrix")
-library("parallel")
+# library("parallel")
 # library("progress")
 suppressPackageStartupMessages(library("loo"))
 suppressPackageStartupMessages(library("geoR"))
