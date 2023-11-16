@@ -131,7 +131,7 @@ spGLM_stack <- function(y, X, S, N.samp, MC.samp = 200,
   S <- S[permut, ]
   
   t_start <- Sys.time()
-  samps <- lapply(1:length(mod_params_list), function(x)
+  samps <- mclapply(1:length(mod_params_list), function(x)
     posterior_and_elpd(y = y, X = X,
                        distmat = distmat,
                        spCov = spCov,
@@ -141,7 +141,8 @@ spGLM_stack <- function(y, X, S, N.samp, MC.samp = 200,
                        beta_prior = beta_prior,
                        spatial_prior = spatial_prior,
                        mod_params = mod_params_list[[x]],
-                       CV_K = CV_fold, Rfastparallel = Rfastparallel))
+                       CV_K = CV_fold, Rfastparallel = Rfastparallel),
+    mc.cores = 6)
   
   # samps <- vector(mode = "list", length = length(mod_params_list))
   # for(x in 1:length(mod_params_list)){
