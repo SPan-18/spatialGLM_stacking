@@ -4,11 +4,11 @@ source("../src/h_runsrc.R")
 
 dat <- read.csv("../data/h_sim_count5000.csv")
 
-# n_run <- 14
-n_run <- 2
+n_run <- 14
+# n_run <- 2
 runtime <- array(dim = c(n_run, 2))
-# nseq <- c(c(1:10)*100, 2000, 3000, 4000, 5000)
-nseq <- c(100, 200)
+nseq <- c(c(1:10)*100, 2000, 3000, 4000, 5000)
+# nseq <- c(100, 200)
 runtime[, 1] <- nseq
 colnames(runtime) <- c("n", "time")
 
@@ -39,4 +39,4 @@ for(i in 1:n_run){
   cat("Took", rt, units(rt), "\n")
 }
 
-# write.csv(runtime, "stack_runtime.csv", row.names = FALSE)
+write.csv(runtime, "stack_runtime.csv", row.names = FALSE)
