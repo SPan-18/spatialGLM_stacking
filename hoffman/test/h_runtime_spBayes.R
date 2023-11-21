@@ -2,11 +2,11 @@ rm(list = ls())
 
 library(spBayes)
 
-dat <- read.csv("../data/h_sim_count1000.csv")
+dat <- read.csv("../data/h_sim_count5000.csv")
 
-n_run <- 10
+nseq <- c(c(1:10)*100, 2:5*1000)
+n_run <- length(nseq)
 runtime <- array(dim = c(n_run, 2))
-nseq <- c(1:n_run)*100
 runtime[, 1] <- nseq
 colnames(runtime) <- c("n", "time")
 
@@ -23,16 +23,19 @@ for(i in 1:n_run){
   n.batch <- 500
   batch.length <- 50
   n.samples <- n.batch*batch.length
+  
+  cat("Running n =", nseq[i], "...\t")
   t1 <- Sys.time()
   m.1 <- spGLM(y~X, family="poisson", coords=S,
                starting=list("beta"=beta.starting, "phi"=0.06,"sigma.sq"=1, "w"=0),
                tuning=list("beta"=c(0.1, 0.1), "phi"=0.5, "sigma.sq"=0.5, "w"=0.5),
                priors=list("beta.Flat", "phi.Unif"=c(0.03, 10), "sigma.sq.IG"=c(2, 1)),
                amcmc=list("n.batch"=n.batch, "batch.length"=batch.length, "accept.rate"=0.43),
-               cov.model="exponential", verbose=TRUE, n.report=10)
+               cov.model="exponential", verbose=FALSE, n.report=10)
   t2 <- Sys.time()
-  runtime[i, 2] <- t2-t1
-  # cat("n = ", nseq[i], " time = ", t2-t1, "\n")
+  rt <- difftime(t2, t1, units = "secs")
+  runtime[i, 2] <- rt
+  cat("Took", rt, units(rt), "\n")
 }
 
-write.csv(runtime, "spBayes_runtime.txt", row.names = FALSE)
+write.csv(runtime, "spBayes_runtime.csv", row.names = FALSE)
