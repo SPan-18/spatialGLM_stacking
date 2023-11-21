@@ -1,3 +1,5 @@
+rm(list = ls())
+
 library(MBA)
 library(coda)
 library(spBayes)
@@ -49,7 +51,7 @@ plot(mcmc(t(m.1$acceptance)), density=FALSE, smooth=FALSE)
 ##Now parameter summaries, etc.
 burn.in <- 0.9*n.samples
 sub.samps <- burn.in:n.samples
-m.1$p.samples[,"phi"] <- 3/m.1$p.samples[,"phi"]
+m.1$p.beta.theta.samples[,"phi"] <- 3/m.1$p.beta.theta.samples[,"phi"]
 plot(m.1$p.beta.theta.samples)
 print(summary(window(m.1$p.beta.theta.samples, start=burn.in)))
 beta.hat <- m.1$p.beta.theta.samples[sub.samps,"(Intercept)"]
