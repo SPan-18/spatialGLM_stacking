@@ -3,7 +3,7 @@
 # error = Merged with joblog
 #$ -o joblog.$JOB_ID #creates a file called joblog.jobidnumber to write to.
 #$ -j y
-#$ -l h_data=3G,h_rt=20:00:00 #requests 30 minutes, 2GB of data (per core)
+#$ -l h_data=3G,h_rt=20:00:00,highp #requests 30 minutes, 2GB of data (per core)
 #$ -pe shared 2 #requests 2 cores
 # Email address to notify
 #$ -M $USER@mail #don't change this line, finds your email in the system
