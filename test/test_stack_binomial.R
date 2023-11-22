@@ -22,10 +22,11 @@ mod_list <- create_model_list(G_decay = c(3, 4, 10),
                               G_nubeta = 2.1, G_nuz = 2.1)
 
 m_out <- spGLM_stack(y = y, X = X, S = S, N.samp = n_postsamp,
-                      family = "binomial",
-                      n_binom = y_binom,
-                      spCov = "matern",
-                      mod_params_list = mod_list)
+                     family = "binomial",
+                     n_binom = y_binom,
+                     spCov = "matern",
+                     mc.cores = 6,
+                     mod_params_list = mod_list)
 
 postrun_samps <- postrunsampler(m_out, N.samp = n_postsamp)
 post_z <- postrun_samps$z

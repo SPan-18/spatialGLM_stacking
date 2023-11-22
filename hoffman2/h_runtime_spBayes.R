@@ -2,20 +2,22 @@ rm(list = ls())
 
 library(spBayes)
 
-dat <- read.csv("../data/h_sim_count5000.csv")
-
-nseq <- c(c(1:10)*100, 2:5*1000)
+nseq <- c(1:10)*1000
+# nseq <- c(10, 20, 50)
 n_run <- length(nseq)
 runtime <- array(dim = c(n_run, 2))
-runtime[, 1] <- nseq
+# runtime[, 1] <- nseq
 colnames(runtime) <- c("n", "time")
 
 for(i in 1:n_run){
+  dat <- read.csv("../data/sim_count5000.csv")
   simdat <- dat[1:nseq[i], ]
+  rm(dat)
   y <- as.numeric(simdat$y)
   X <- as.matrix(simdat[, grep("x", names(simdat))])
   X <- as.matrix(X[, -1])
   S <- as.matrix(simdat[, c("s1", "s2")])
+  rm(simdat)
   
   ##Collect samples
   beta.starting <- coefficients(glm(y~X, family="poisson"))
@@ -34,8 +36,11 @@ for(i in 1:n_run){
                cov.model="exponential", verbose=FALSE, n.report=10)
   t2 <- Sys.time()
   rt <- difftime(t2, t1, units = "secs")
+  rm(m.1)
+  runtime[i, 1] <- nseq[i]
   runtime[i, 2] <- rt
   cat("Took", rt, units(rt), "\n")
+  write.csv(runtime[1:i,], file = "spBayes_runtime.csv", row.names = FALSE)
 }
 
-write.csv(runtime, "spBayes_runtime.csv", row.names = FALSE)
+# write.csv(runtime, "spBayes_runtime.csv", row.names = FALSE)

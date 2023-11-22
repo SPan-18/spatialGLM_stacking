@@ -1,10 +1,12 @@
 library(latex2exp)
 library(ggplot2)
 
-nseq <- c(1:5)*100
+run_time_stack <- read.csv("stack_runtime_Nov16.csv")
+run_time_MCMC <- read.csv("spBayes_runtime_Nov13.csv")
+nseq <- run_time$n
 
 stack_fit <- c(15.1, 25.2, 38.3, 57.2, 75.6) # 99, 115.8, 138.0, 156.0, 198
-stack_nofit <- c(10.3, 17.8, 25.6, 40.8, 45.1) # 55.7, 73.8, 90.6, 105.6, 126.6
+# stack_nofit <- c(10.3, 17.8, 25.6, 40.8, 45.1) # 55.7, 73.8, 90.6, 105.6, 126.6
 spBayes_time <- c(55.4, 381.6, 981.6, 2469, 4968)
 
 run_time <- data.frame(n = nseq, stack_nofit = stack_nofit,
