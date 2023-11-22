@@ -2,7 +2,7 @@ rm(list = ls())
 
 library(spBayes)
 
-nseq <- c(1:10)*1000
+nseq <- c(10, 20)
 # nseq <- c(10, 20, 50)
 n_run <- length(nseq)
 runtime <- array(dim = c(n_run, 2))
