@@ -6,7 +6,12 @@ rmvn <- function(n, mu=0, V = matrix(1)){
   p <- length(mu)
   if(any(is.na(match(dim(V),p))))
     stop("Dimension problem!")
-  D <- chol(V)
+  if(require(Rfast)){
+    D <- Rfast::cholesky(V, parallel = TRUE)
+  }else{
+    D <- chol(V)
+  }
+  # D <- chol(V)
   t(matrix(rnorm(n*p), ncol=p) %*% D + rep(mu,rep(n,p)))
 }
 
@@ -17,7 +22,8 @@ sim_count <- function(n, beta, phi){
   #                 s2 = runif(n, 0, 1))
   p <- length(beta)
   X <- cbind(rep(1, n), sapply(1:(p-1), function(x) rnorm(n)))
-  V <- as.matrix(dist(S))
+  D <- as.matrix(dist(S))
+  V <- 0.4 * exp(- phi * D)
   z <- rmvn(1, rep(0, n), V)
   # z <- MASS::mvrnorm(n = 1, mu = rep(0,n), 
   #                    Sigma = 0.4 * exp(- phi * V))
@@ -28,8 +34,8 @@ sim_count <- function(n, beta, phi){
 }
 
 # TEST
-# simdat <- sim_count(1000, c(2, -1), 3)
-# write.csv(simdat, "../data/sim2count_1000.csv")
+# simdat <- sim_count(10000, c(1, -1), 3)
+# write.csv(simdat, "../data/sim2count_10000.csv")
 
 ilogit <- function(x){
   return(1.0 / (1.0 + exp(- x)))
