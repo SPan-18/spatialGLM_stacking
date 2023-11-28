@@ -165,13 +165,18 @@ spGLM_stack <- function(y, X, S, N.samp, MC.samp = 200,
   
   elpd_mat <- do.call(cbind, lapply(samps, function(x) x$elpd))
   w_hat <- CVXR_stacking_weights(elpd_mat, solver = solver)
+  w_hat <- as.numeric(w_hat)
+  if(solver == "MOSEK"){
+    w_hat <- sapply(w_hat, function(x) max(0, x))
+    w_hat <- w_hat / sum(w_hat)
+  }
   t_end <- Sys.time()
   runtime <- difftime(t_end, t_start)
   if(verbose) cat("\nRUNTIME:", round(runtime, 2), units(runtime), ".\n\n")
   
   if(verbose){
     stack_out <- as.matrix(do.call(rbind, lapply(mod_params_list, unlist)))
-    stack_out <- cbind(stack_out, round(as.numeric(w_hat), 2))
+    stack_out <- cbind(stack_out, round(w_hat, 2))
     colnames(stack_out) = c("phi", "smooth", "epsilon", "nu.xi", "nu.beta", "nu.z", "weight")
     rownames(stack_out) = paste("Model", 1:nrow(stack_out))
     if(print_stackweights){
@@ -185,7 +190,7 @@ spGLM_stack <- function(y, X, S, N.samp, MC.samp = 200,
     samps[[i]]$elpd <- samps[[i]]$elpd[order(permut)]
   }
   
-  return(list(models = samps, weights = as.numeric(w_hat)))
+  return(list(models = samps, weights = w_hat))
 }
 
 spGLM_onlystack <- function(y, X, S, MC.samp = 200,
