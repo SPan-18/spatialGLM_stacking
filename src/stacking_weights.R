@@ -7,9 +7,9 @@ CVXR_stacking_weights <- function(lpd_point, solver = "ECOS"){
   exp_lpd_point <- exp(lpd_point)
   G <- ncol(lpd_point)
   
-  w <- Variable(G)
+  w <- Variable(G, nonneg = TRUE)
   obj <- Maximize(sum(log(exp_lpd_point %*% w)))
-  constr <- list(sum(w) == 1, w >= 0)
+  constr <- list(sum(w) == 1)
   prob <- Problem(objective = obj, constraints = constr)
   result <- solve(prob, solver = solver)
   
