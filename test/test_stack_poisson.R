@@ -22,6 +22,7 @@ m_out <- spGLM_stack(y = y, X = X, S = S, N.samp = n_postsamp,
                      family = "poisson",
                      spCov = "matern",
                      mc.cores = 6,
+                     solver = "MOSEK",
                      mod_params_list = mod_list)
 
 postrun_samps <- postrunsampler(m_out, N.samp = n_postsamp)
@@ -51,13 +52,13 @@ p1 <- pointref_plot(simdat, "z", legend_title = leg_title)
 # p4 <- pointref_plot(simdat, "postcred1_z", legend_title = leg_title)
 # p5 <- pointref_plot(simdat, "postcred2_z", legend_title = leg_title)
 p6 <- pointref_plot(simdat, "postmedian_z", legend_title = leg_title)
-# gridExtra::grid.arrange(p1, p4, p5, ncol = 3)
+gridExtra::grid.arrange(p1, p6, ncol = 2)
 
 # pointref_plot(simdat, "y", legend_title = "y")
 # pointref_plot(simdat, "yhat", legend_title = "y_hat")
 
-ggsave("true_z_pois.pdf", plot = p1, width=4, height=4, units='in')
-ggsave("postmedian_z_pois.pdf", plot = p6, width=4, height=4, units='in')
+# ggsave("true_z_pois.pdf", plot = p1, width=4, height=4, units='in')
+# ggsave("postmedian_z_pois.pdf", plot = p6, width=4, height=4, units='in')
 
 ### Histogram of beta
 # post_beta <- data.frame(intercept = postrun_samps$beta[1, ],
