@@ -8,7 +8,7 @@ library(spBayes)
 # source("../src/pointrefplot.R")
 
 dat <- read.csv("../data/sim_count1000.csv")
-simdat <- dat[1:50, ]
+simdat <- dat[1:1000, ]
 y <- as.numeric(simdat$y)
 X <- as.matrix(simdat[, grep("x", names(simdat))])
 X <- as.matrix(X[, -1])
@@ -36,7 +36,7 @@ w.hat <- m.1$p.w.samples[,sub.samps]
 write.table(w.hat, file = "posterior_spatial.csv", 
             col.names = FALSE, row.names = FALSE)
 
-# w_hat <- read.table("posterior_spatial.csv", header = FALSE)
+# w_hat <- read.table("post_sp.csv", header = FALSE)
 # simdat$postmedian_z <- apply(w_hat, 1, median)
 # 
 # leg_title <- TeX('$z(s)$')
