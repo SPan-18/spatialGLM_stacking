@@ -14,6 +14,7 @@
 . /u/local/Modules/default/init/modules.sh
 module load R/4.2.2 #loads R for use
 module load gcc/11.3.0
+module load cmake/3.19.5
 
 # run R code
 echo 'Running h_runtime_comparison.R' #prints this quote to joblog.jobidnumber
