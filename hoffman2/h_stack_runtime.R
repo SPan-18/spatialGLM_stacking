@@ -41,7 +41,7 @@ for(i in 1:n_run){
     t2 <- Sys.time()
     rt <- difftime(t2, t1, units = "secs")
     runtime[i, (j+1)] <- rt
-    write.csv(runtime, "stack_runtime.csv", row.names = FALSE)
+    write.csv(runtime, "stack_runtime2.csv", row.names = FALSE)
     cat("Rep", j, ": Took", rt, units(rt), "\n")
   }
 }
