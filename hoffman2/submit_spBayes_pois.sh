@@ -16,6 +16,6 @@ module load R/4.2.2 #loads R for use
 
 # run R code
 echo 'Running h_runtime_comparison.R' #prints this quote to joblog.jobidnumber
-Rscript h_spBayes_pois.R > output.$JOB_ID 2>&1
+Rscript h_spBayes_Poisson.R > output.$JOB_ID 2>&1
 # command-line arguments: number of samples, number of repetitions, seed, command to create n samples
 # outputs any text (stdout and stderr) to output.$JOB_ID
