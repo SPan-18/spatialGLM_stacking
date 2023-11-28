@@ -4,12 +4,12 @@ source("../src/runsrc.R")
 
 dat <- read.csv("../data/sim_count5000.csv")
 
-# n_run <- 14
-n_run <- 2
+n_run <- 14
+# n_run <- 2
 nrep <- 2
 runtime <- array(dim = c(n_run, (nrep+1)))
-# nseq <- c(c(1:10)*100, 2000, 3000, 4000, 5000)
-nseq <- c(100, 100)
+nseq <- c(c(1:10)*100, 2000, 3000, 4000, 5000)
+# nseq <- c(100, 100)
 runtime[, 1] <- nseq
 colnames(runtime) <- c("n", paste("time", 1:nrep, sep = ""))
 
