@@ -7,7 +7,7 @@ library(spBayes)
 # library(latex2exp)
 # source("../src/pointrefplot.R")
 
-nseq <- 1:10*100
+nseq <- c(100, 200, 500, 1000)
 n_run <- length(nseq)
 
 for(i in 1:n_run){
