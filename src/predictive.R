@@ -6,6 +6,7 @@ predict_z <- function(z_post, J, cholV, V_tilde, nu_z,
   n.samp <- dim(z_post)[2]
   n <- dim(z_post)[1]
   z_tilde <- backsolve(cholV, z_post, transpose = TRUE)
+  # browser()
   u <- rgamma(n.samp, 0.5 * (nu_z + n), 0.5)
   w <- sapply(1:n.samp, function(x) rnorm(m) * sqrt((nu_z + sum(z_tilde^2)) / u[x]))
   # w <- sapply(1:100, function(x) rnorm(m))

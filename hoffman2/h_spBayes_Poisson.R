@@ -7,7 +7,7 @@ library(spBayes)
 # library(latex2exp)
 # source("../src/pointrefplot.R")
 
-nseq <- c(100, 200, 500, 1000)
+nseq <- c(10, 20)
 n_run <- length(nseq)
 
 for(i in 1:n_run){
@@ -40,10 +40,10 @@ for(i in 1:n_run){
   beta.hat <- m.1$p.beta.theta.samples[sub.samps, 1:2]
   
   write.table(beta.hat, 
-              file = paste("beta_hat_", nseq[i], ".txt", sep = ""), 
+              file = paste("post_spBayes/beta_hat_", nseq[i], ".txt", sep = ""), 
               col.names = FALSE, row.names = FALSE)
   write.table(w.hat, 
-              file = paste("z_hat_", nseq[i], ".txt", sep = ""), 
+              file = paste("post_spBayes/z_hat_", nseq[i], ".txt", sep = ""), 
               col.names = FALSE, row.names = FALSE)
 }
 

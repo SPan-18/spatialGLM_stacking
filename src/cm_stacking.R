@@ -163,6 +163,8 @@ spGLM_stack <- function(y, X, S, N.samp, MC.samp = 200,
       mc.cores = min(mc.cores, ncores))
   }
   
+  # return(samps)
+  
   elpd_mat <- do.call(cbind, lapply(samps, function(x) x$elpd))
   w_hat <- CVXR_stacking_weights(elpd_mat, solver = solver)
   w_hat <- as.numeric(w_hat)
@@ -173,7 +175,7 @@ spGLM_stack <- function(y, X, S, N.samp, MC.samp = 200,
   t_end <- Sys.time()
   runtime <- difftime(t_end, t_start)
   if(verbose) cat("\nRUNTIME:", round(runtime, 2), units(runtime), ".\n\n")
-  
+
   if(verbose){
     stack_out <- as.matrix(do.call(rbind, lapply(mod_params_list, unlist)))
     stack_out <- cbind(stack_out, round(w_hat, 2))
@@ -182,14 +184,14 @@ spGLM_stack <- function(y, X, S, N.samp, MC.samp = 200,
     if(print_stackweights){
       cat("STACKING WEIGHTS:\n")
       print(knitr::kable(stack_out))
-    } 
+    }
   }
-  
+
   for(i in 1:length(samps)){
     samps[[i]]$z <- samps[[i]]$z[order(permut), ]
     samps[[i]]$elpd <- samps[[i]]$elpd[order(permut)]
   }
-  
+
   return(list(models = samps, weights = w_hat))
 }
 
@@ -289,7 +291,7 @@ CV_elpd <- function(y, X, MC.samp,
 }
 
 postrunsampler <- function(out, N.samp){
-  stack_weights <- as.numeric(out$weights)
+  stack_weights <- round(as.numeric(out$weights), 3)
   n_post <- dim(out$models[[1]]$beta)[2]
   p.obs <- dim(out$models[[1]]$beta)[1]
   n.obs <- dim(out$models[[1]]$z)[1]
@@ -304,3 +306,5 @@ postrunsampler <- function(out, N.samp){
 }
 
 # TEST
+
+

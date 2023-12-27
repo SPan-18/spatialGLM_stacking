@@ -1,8 +1,5 @@
 # rm(list = ls())
-# library(MASS)
-# library(dplyr)
 # library(ggplot2)
-# library(akima)
 # library(latex2exp)
 # library(MBA)
 # library(fields)
