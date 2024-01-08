@@ -48,3 +48,20 @@ predict_z <- function(z_post, J, cholV, V_tilde, nu_z,
 # apply(z_pred, 1, mean)
 # 
 # apply(t(V[- ids, ids]) %*% solve(V[- ids, - ids]) %*% z_obs, 1, summary)
+
+
+###### Prediction #######
+
+# pointPredict <- function(X.new, S.new, S, posterior.samp,
+#                          family, spCov, 
+#                          mod_params_list, mod_weights){
+#   
+# }
+
+
+
+
+
+
+
+
