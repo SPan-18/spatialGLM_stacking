@@ -15,10 +15,11 @@ n_postsamp <- 500
 mod_list <- create_model_list(G_decay = c(3, 4, 10), 
                               G_smoothness = c(0.5, 1, 1.5),
                               G_epsilon = c(0.25, 0.5),
-                              G_nuxi = 0,
+                              G_nuxi = 1,
                               G_nubeta = 2.1, G_nuz = 2.1)
 
-m_out <- spGLM_stack(y = y, X = X, S = S, N.samp = n_postsamp,
+m_out <- spGLM_stack(y = y, X = X, S = S, 
+                     N.samp = n_postsamp, MC.samp = 200,
                      family = "poisson",
                      spCov = "matern",
                      mc.cores = 6,

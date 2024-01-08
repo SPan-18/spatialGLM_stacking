@@ -7,13 +7,14 @@ sampler_GCM <- function(n, p, y, X, family,
                         n_binom = NULL,
                         XtXplusIchol, L_z,
                         nu_xi, nu_beta, nu_z, alpha_epsilon){
-  if(nu_xi == 0){
-    sigmasq_xi <- 1
-    w_xi <- rnorm(n)
-  } else{
-    sigmasq_xi <- 1/rgamma(1, 0.5 * nu_xi, 0.5 * nu_xi)
-    w_xi <- rnorm(n) * sqrt(nu_xi / sigmasq_xi)
-  } 
+  # if(nu_xi == 0){
+  #   sigmasq_xi <- 1
+  #   w_xi <- rnorm(n)
+  # } else{
+  #   sigmasq_xi <- 1/rgamma(1, 0.5 * nu_xi, 0.5 * nu_xi)
+  #   w_xi <- rnorm(n) * sqrt(nu_xi / sigmasq_xi)
+  # } 
+  w_xi <- rnorm(n, mean = 0, sd = nu_xi)
   sigmasq_beta <- 1/rgamma(1, 0.5 * nu_beta, 0.5 * nu_beta)
   sigmasq_z <- 1/rgamma(1, 0.5 * nu_z, 0.5 * nu_z)
   

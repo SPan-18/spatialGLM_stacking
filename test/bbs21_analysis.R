@@ -2,11 +2,11 @@ rm(list = ls())
 
 source("../src/runsrc.R")
 
-bbs <- read.csv("../data/BBS16.csv")
+bbs <- read.csv("../data/BBS21.csv")
 bbs <- bbs %>%
-  filter(Latitude < 55) # %>%
-  # filter(!(RouteDataID == 6376050)) %>%
-  # filter(BirdCount < 500)
+  filter(Latitude < 55) %>%
+  filter(!(RouteDataID == 6376050)) %>%
+  filter(BirdCount < 500)
 
 ids <- 1:nrow(bbs)
 y <- as.numeric(bbs[ids, "BirdCount"])
@@ -19,14 +19,14 @@ n_postsamp <- 500
 mod_list <- create_model_list(G_decay = c(300, 400, 1200), 
                               G_smoothness = c(0.5, 1, 1.5),
                               G_epsilon = c(0.5, 0.75),
-                              G_nuxi = 0,
+                              G_nuxi = 1,
                               G_nubeta = 2.1, G_nuz = 2.1)
 
 m_out <- spGLM_stack(y = y, X = X, S = S, N.samp = n_postsamp,
                      MC.samp = 500,
                      family = "poisson",
                      spCov = "matern",
-                     mc.cores = NULL,
+                     mc.cores = 7,
                      solver = "MOSEK",
                      mod_params_list = mod_list)
 
