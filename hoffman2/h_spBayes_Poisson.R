@@ -7,7 +7,7 @@ library(spBayes)
 # library(latex2exp)
 # source("../src/pointrefplot.R")
 
-nseq <- c(1000)
+nseq <- c(100)
 n_run <- length(nseq)
 
 for(i in 1:n_run){
@@ -27,11 +27,11 @@ for(i in 1:n_run){
   n.samples <- n.batch*batch.length
   
   m.1 <- spGLM(y~X, family="poisson", coords=S,
-               starting=list("beta"=beta.starting, "phi"=0.06,"sigma.sq"=1, "w"=0),
-               tuning=list("beta"=c(0.1, 0.1), "phi"=0.5, "sigma.sq"=0.5, "w"=0.5),
-               priors=list("beta.Flat", "phi.Unif"=c(0.03, 10), "sigma.sq.IG"=c(2, 1)),
+               starting=list("beta"=beta.starting, "phi"=0.06,"sigma.sq"=1, "w"=0, "nu" = 0.3),
+               # tuning=list("beta"=c(0.1, 0.1), "phi"=0.5, "sigma.sq"=0.5, "w"=0.5),
+               priors=list("beta.Flat", "phi.Unif"=c(0.03, 10), "sigma.sq.IG"=c(2, 1), "nu.Unif" = c(0.1, 2)),
                amcmc=list("n.batch"=n.batch, "batch.length"=batch.length, "accept.rate"=0.43),
-               cov.model="exponential", verbose=TRUE, n.report=10)
+               cov.model="matern", verbose=TRUE, n.report=10)
   
   burn.in <- 0.9*n.samples
   sub.samps <- burn.in:n.samples
@@ -39,11 +39,11 @@ for(i in 1:n_run){
   w.hat <- m.1$p.w.samples[,sub.samps]
   beta.hat <- m.1$p.beta.theta.samples[sub.samps, 1:2]
   
-  write.table(beta.hat, 
-              file = paste("post_spBayes/beta_hat_", nseq[i], ".txt", sep = ""), 
+  write.table(beta.hat,
+              file = paste("post_spBayes/beta_hat_", nseq[i], ".txt", sep = ""),
               col.names = FALSE, row.names = FALSE)
-  write.table(w.hat, 
-              file = paste("post_spBayes/z_hat_", nseq[i], ".txt", sep = ""), 
+  write.table(w.hat,
+              file = paste("post_spBayes/z_hat_", nseq[i], ".txt", sep = ""),
               col.names = FALSE, row.names = FALSE)
 }
 
