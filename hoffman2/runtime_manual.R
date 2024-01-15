@@ -50,18 +50,19 @@ ggplot(rt_df, aes(x = n, color = variable)) +
   geom_point(data = rt_obs, aes(x = n, y = value)) +
   # scale_x_continuous(trans = 'log10') +
   scale_y_continuous(trans='log10') +
-  xlab(TeX('$n$')) +
+  xlab('Sample size') +
   ylab(TeX('$\\log_{10}$Time')) +
   labs(color = "Method") +
-  scale_color_discrete(labels = c("MCMC", "stacking")) +
+  scale_color_discrete(labels = c("MCMC", "Stacking")) +
   theme_bw() +
-  theme(legend.title = element_blank(),
+  theme(legend.title = element_text(size = 9, face = "italic"),
+        legend.title.align=0.5,
         legend.background = element_blank(),
         legend.position = c(0.12, 0.9),
-        legend.text = element_text(size = 10, family = "mono"),
-        legend.key.size = unit(0.5, 'cm'),
-        axis.title.x = element_text(size = 11, family = "mono"),
-        axis.title.y = element_text(size = 11, family = "mono"),
+        legend.text = element_text(size = 10),
+        legend.key.size = unit(0.3, 'cm'),
+        axis.title.x = element_text(size = 11),
+        axis.title.y = element_text(size = 11),
         # axis.line = element_line(color='black'),
         panel.background = element_blank(),
         panel.grid.major = element_blank(),
