@@ -56,6 +56,9 @@ S <- as.matrix(bbs21[ids, c("Longitude", "Latitude")])
 w.hat <- read.table("bbs21_z_hat.txt")
 beta.hat <- read.table("bbs21_beta_hat.txt")
 
+beta.hat <- beta.hat[c(rep(FALSE, 4), TRUE), ]
+w.hat <- w.hat[, c(rep(FALSE, 4), TRUE)]
+
 print(ci_beta(beta.hat))
 
 y.hat <- apply(exp(cbind(rep(1, nrow(X)), X) %*% t(beta.hat) + w.hat), 
@@ -90,15 +93,22 @@ us_df <- na.omit(us_df)
 us_df$z <- exp(us_df$z)
 
 world <- ne_countries(scale = "medium", returnclass = "sf")
+latmin <- min(bbs21$Latitude)
+latmax <- max(bbs21$Latitude)
+lonmin <- min(bbs21$Longitude)
+lonmax <- max(bbs21$Longitude)
+lat_extra <- abs(latmax - latmin) * 0.01 # 0.0
+lon_extra <- abs(lonmax - lonmin) * 0.01 # 0.0
+latlim <- c(latmin - lat_extra, latmax + lat_extra)
+lonlim <- c(lonmin - lon_extra, lonmax + lon_extra)
 brks <- quantile(bbs21$yhat, c(0, 0.2, 0.4, 0.6, 0.8, 1))
-
 blue.red <- c("#2c7bb6", "#abd9e9", "#ffffbf", "#fdae61", "#d7191c")
 col.br <- colorRampPalette(blue.red)
 
 ggplot(data = world) +
   geom_sf(fill = "antiquewhite") +
-  coord_sf(xlim = c(-149.40764, -39.89025), 
-           ylim = c(17.06898, 76.91902), expand = FALSE) +
+  coord_sf(xlim = lonlim, 
+           ylim = latlim, expand = FALSE) +
   # geom_raster(data = surf_df, aes(x = x, y = y, fill = z), alpha = 0.75) +
   geom_raster(data = us_df, aes(x = x, y = y, fill = z), alpha = 0.9) +
   # scale_fill_viridis(option = "plasma", trans = "log", direction = -1, 

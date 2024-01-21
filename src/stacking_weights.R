@@ -2,14 +2,20 @@
 
 CVXR_stacking_weights <- function(lpd_point, solver = "ECOS"){
   message("Using ", solver, " solver to get stacking weights.")
+  if(sum(!is.finite(lpd_point)) > 0){
+    minelpd <- min(lpd_point[is.finite(lpd_point)])
+    lpd_pointt[!is.finite(lpd_point)] <- minelpd - 1
+  }
+  
   lpd_m = mean(lpd_point)
   lpd_point = lpd_point - lpd_m ## rescale the log-density for numerical stability
   exp_lpd_point <- exp(lpd_point)
   G <- ncol(lpd_point)
   
-  w <- Variable(G)
+  w <- Variable(G, nonneg = TRUE)
   obj <- Maximize(sum(log(exp_lpd_point %*% w)))
-  constr <- list(sum(w) == 1, w >= 0)
+  # constr <- list(sum(w) == 1, w >= 0)
+  constr <- list(sum(w) == 1)
   prob <- Problem(objective = obj, constraints = constr)
   
   # solver1 <- solver
@@ -49,4 +55,11 @@ CVXR_stacking_weights <- function(lpd_point, solver = "ECOS"){
 #   
 #   x
 # }
+
+# elpd_mat <- read.table("../test/elpd_mat.txt")
+# elpd_mat <- as.matrix(elpd_mat)
+# w1 <- loo::stacking_weights(elpd_mat)
+# 
+# w2 <- CVXR_stacking_weights(elpd_mat, solver = "MOSEK")
+
 
