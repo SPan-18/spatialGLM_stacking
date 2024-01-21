@@ -10,40 +10,39 @@ y <- as.numeric(simdat$y)
 X <- as.matrix(simdat[, grep("x", names(simdat))])
 S <- as.matrix(simdat[, c("s1", "s2")])
 
-n_postsamp <- 1000000
+n_postsamp <- 10000
 
-mod_out <- spGCM_MCMC(y = y, X = X, S = S, 
-                      N.samp = n_postsamp,
-                      family = "poisson", 
-                      spCov = "matern",
-                      starting = list(phi = 3, nu = 1,
-                                      beta = c(0, 0)),
-                      prior = list(phi = c(0.5, 10),
-                                   nu = c(0.1, 2),
-                                   nu_xi = 1, 
-                                   nu_beta = 2.1,
-                                   nu_z = 2.1,
-                                   alpha_epsilon = 0.5),
-                      tuning = c(0.05, 0.05))
-                      # n.batch = 10,
-                      # batch.length = 10,
-                      # n.report = 1)
+mod_out <- spGCM_adaMetropGibbs(y = y, X = X, S = S, 
+                                family = "poisson", 
+                                N.samp = n_postsamp,
+                                spCov = "matern",
+                                starting = list(phi = 3, nu = 1,
+                                                beta = c(0, 0)),
+                                prior = list(phi = c(0.5, 10),
+                                             nu = c(0.1, 2),
+                                             nu_xi = 1, 
+                                             nu_beta = 2.1,
+                                             nu_z = 2.1,
+                                             alpha_epsilon = 0.5))
 
-burnin <- 0.75 * n_postsamp
 
-write.table(mod_out$beta[, -(1:burnin)],
+ids <- 1:n_postsamp
+ids <- ids[-(1:(floor(0.1 * n_postsamp))+1)]
+ids <- ids[c(rep(FALSE, 8), TRUE)]
+# 
+write.table(mod_out$beta[, ids],
             file = "post_MCMC/beta_100.txt",
             col.names = FALSE, row.names = FALSE)
-write.table(mod_out$z[, -(1:burnin)],
+write.table(mod_out$z[, ids],
             file = "post_MCMC/z_100.txt",
             col.names = FALSE, row.names = FALSE)
-write.table(mod_out$xi[, -(1:burnin)],
+write.table(mod_out$xi[, ids],
             file = "post_MCMC/xi_100.txt",
             col.names = FALSE, row.names = FALSE)
-write.table(mod_out$phi[-(1:burnin)],
+write.table(mod_out$phi[ids],
             file = "post_MCMC/phi_100.txt",
             col.names = FALSE, row.names = FALSE)
-write.table(mod_out$nu[-(1:burnin)],
+write.table(mod_out$nu[ids],
             file = "post_MCMC/nu_100.txt",
             col.names = FALSE, row.names = FALSE)
 
@@ -64,7 +63,7 @@ write.table(mod_out$nu[-(1:burnin)],
 # plot(mod_out$beta[1,-(1:burnin)], type = "l")
 # plot(mod_out$beta[2,], type = "l")
 
-# post_z <- mod_out$z + mod_out$xi
+# post_z <- mod_out$z
 # simdat$postmedian_z <- apply(post_z, 1, median)
 # leg_title <- TeX('$z(s)$')
 # p1 <- pointref_plot(simdat, "z", legend_title = leg_title)

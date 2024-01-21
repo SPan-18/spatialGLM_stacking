@@ -28,14 +28,15 @@ sim_count <- function(n, beta, phi){
   # z <- MASS::mvrnorm(n = 1, mu = rep(0,n), 
   #                    Sigma = 0.4 * exp(- phi * V))
   mu <- X %*% beta + z
+  # mu <- X %*% beta + z + rnorm(n)
   dat <- cbind(S, X, y = rpois(n, exp(mu)), z = z)
   names(dat) = c("s1", "s2", paste("x", 0:(p-1), sep = ""), "y", "z")
   return(dat)
 }
 
 # TEST
-# simdat <- sim_count(10000, c(1, -1), 3)
-# write.csv(simdat, "../data/sim2count_10000.csv")
+# simdat <- sim_count(1000, c(5, -0.5), 3.5)
+# write.csv(simdat, "../data/sim_count1000v2.csv")
 
 ilogit <- function(x){
   return(1.0 / (1.0 + exp(- x)))

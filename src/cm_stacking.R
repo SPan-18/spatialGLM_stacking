@@ -103,6 +103,7 @@ posterior_and_elpd <- function(y, X, N.samp, MC.samp,
   
   return(list(beta = gamma[(n+1):(n+p), ],
               z = gamma[(n+p+1):(2*n+p), ], 
+              xi = gamma[1:n, ],
               elpd = elpd))
 }
 
@@ -166,7 +167,12 @@ spGLM_stack <- function(y, X, S, N.samp, MC.samp = 200,
   # return(samps)
   
   elpd_mat <- do.call(cbind, lapply(samps, function(x) x$elpd))
+  # write.table(elpd_mat, "elpd_mat.txt", 
+  #             col.names = FALSE, row.names = FALSE)
+  # return(elpd_mat)
+  
   w_hat <- CVXR_stacking_weights(elpd_mat, solver = solver)
+  # w_hat <- loo::stacking_weights(elpd_mat)
   w_hat <- as.numeric(w_hat)
   if(solver == "MOSEK"){
     w_hat <- sapply(w_hat, function(x) max(0, x))
@@ -189,6 +195,7 @@ spGLM_stack <- function(y, X, S, N.samp, MC.samp = 200,
 
   for(i in 1:length(samps)){
     samps[[i]]$z <- samps[[i]]$z[order(permut), ]
+    samps[[i]]$xi <- samps[[i]]$xi[order(permut), ]
     samps[[i]]$elpd <- samps[[i]]$elpd[order(permut)]
   }
 
@@ -299,10 +306,12 @@ postrunsampler <- function(out, N.samp){
   post_samples <- sapply(1:N.samp, function(x){
     model_id <- sample(1:length(out$models), 1, prob = stack_weights)
     return(c(out$models[[model_id]]$beta[, ids[x]], 
-             out$models[[model_id]]$z[, ids[x]]))
+             out$models[[model_id]]$z[, ids[x]],
+             out$models[[model_id]]$xi[, ids[x]]))
   })
   return(list(beta = post_samples[1:p.obs, ],
-              z = post_samples[(p.obs+1):(n.obs+p.obs), ]))
+              z = post_samples[(p.obs+1):(n.obs+p.obs), ],
+              xi = post_samples[(n.obs+p.obs+1):(2*n.obs+p.obs), ]))
 }
 
 # TEST

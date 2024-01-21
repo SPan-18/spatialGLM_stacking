@@ -26,17 +26,18 @@ m_out <- spGLM_stack(y = y, X = X, S = S, N.samp = n_postsamp,
                      MC.samp = 500,
                      family = "poisson",
                      spCov = "matern",
-                     mc.cores = 7,
+                     mc.cores = 6,
                      solver = "MOSEK",
                      mod_params_list = mod_list)
 
 postrun_samps <- postrunsampler(m_out, N.samp = n_postsamp)
 post_z <- postrun_samps$z
 post_beta <- postrun_samps$beta
+post_xi <- postrun_samps$xi
 
 print(ci_beta(t(post_beta)))
 
-y.hat <- apply(exp(X %*% post_beta + post_z), 2, function(x){rpois(dim(X)[1], x)})
+y.hat <- apply(exp(X %*% post_beta + post_z + post_xi), 2, function(x){rpois(dim(X)[1], x)})
 y.hat.mu <- apply(y.hat, 1, median)
 
 bbs$yhat <- log(y.hat.mu)
@@ -50,7 +51,7 @@ library(raster)
 library(viridis)
 
 surf <- mba.surf(bbs[ , c("Longitude","Latitude", "yhat")], 
-                 no.X = 200, no.Y = 200, h = 8, m = 1, n = 1, 
+                 no.X = 200, no.Y = 200, h = 6, m = 1, n = 1, 
                  extend=FALSE)$xyz.est
 
 surf_rast <- raster(surf)
@@ -70,8 +71,8 @@ latmin <- min(bbs$Latitude)
 latmax <- max(bbs$Latitude)
 lonmin <- min(bbs$Longitude)
 lonmax <- max(bbs$Longitude)
-lat_extra <- abs(latmax - latmin) * 0.2
-lon_extra <- abs(lonmax - lonmin) * 0.2
+lat_extra <- abs(latmax - latmin) * 0.01
+lon_extra <- abs(lonmax - lonmin) * 0.01
 latlim <- c(latmin - lat_extra, latmax + lat_extra)
 lonlim <- c(lonmin - lon_extra, lonmax + lon_extra)
 brks <- quantile(bbs$yhat, c(0, 0.2, 0.4, 0.6, 0.8, 1))

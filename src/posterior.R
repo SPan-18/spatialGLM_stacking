@@ -74,6 +74,7 @@ elpd_GCM <- function(y_train, X_train, y_pred, X_pred, N.samp,
                 nu_z = nu_z, 
                 alpha_epsilon = alpha_epsilon))
   
+  # samp_xi <- gamma_train[1:n, ]
   samp_beta <- gamma_train[(n+1):(n+p), ]
   samp_z <- gamma_train[(n+p+1):(2*n+p), ]
   
