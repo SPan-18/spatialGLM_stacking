@@ -312,9 +312,9 @@ spGCM_adaMCMC <- function(y, X, S, family,
       Qz <- sum(backsolve(L_z_cand, post_z[, s+1], transpose = TRUE)^2)
       logPostcand <- - 0.5 * logdetz - 0.5 * (nu_z + n) * log(1 + Qz / nu_z)
       logPostcand <- logPostcand + log(phi - phiUnifa) + log(phiUnifb - phi)
-      # if(spCov == "matern"){
-      #   logPostcand <- logPostcand + log(nu - nuUnifa) + log(nuUnifb - nu)
-      # }
+      if(spCov == "matern"){
+        logPostcand <- logPostcand + log(nu - nuUnifa) + log(nuUnifb - nu)
+      }
       
       logMHratio <- logPostcand - logPostcurrent
       
@@ -342,7 +342,7 @@ spGCM_adaMCMC <- function(y, X, S, family,
         logdetz <- 2 * sum(log(diag(L_z_cand)))
         Qz <- sum(backsolve(L_z_cand, post_z[, s+1], transpose = TRUE)^2)
         logPostcand <- - 0.5 * logdetz - 0.5 * (nu_z + n) * log(1 + Qz / nu_z)
-        # logPostcand <- logPostcand + log(phi - phiUnifa) + log(phiUnifb - phi)
+        logPostcand <- logPostcand + log(phi - phiUnifa) + log(phiUnifb - phi)
         logPostcand <- logPostcand + log(nu - nuUnifa) + log(nuUnifb - nu)
         
         logMHratio <- logPostcand - logPostcurrent

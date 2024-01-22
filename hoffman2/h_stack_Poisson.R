@@ -5,12 +5,12 @@ source("../src/runsrc.R")
 # n_run <- 14
 # n_run <- 2
 # nrep <- 5
-nseq <- c(1000)
+nseq <- c(100)
 # nseq <- c(100, 100)
 
 n_postsamp <- 1000
 
-mod_list <- create_model_list(G_decay = c(3, 4, 10), 
+mod_list <- create_model_list(G_decay = c(3, 5, 10), 
                               G_smoothness = c(0.5, 1, 1.5),
                               G_epsilon = c(0.5, 0.75),
                               G_nuxi = 1,

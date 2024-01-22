@@ -27,8 +27,8 @@ mod_out <- spGCM_adaMetropGibbs(y = y, X = X, S = S,
 
 
 ids <- 1:n_postsamp
-ids <- ids[-(1:(floor(0.1 * n_postsamp))+1)]
-ids <- ids[c(rep(FALSE, 8), TRUE)]
+# ids <- ids[-(1:(floor(0.1 * n_postsamp))+1)]
+# ids <- ids[c(rep(FALSE, 8), TRUE)]
 # 
 write.table(mod_out$beta[, ids],
             file = "post_MCMC/beta_100.txt",
