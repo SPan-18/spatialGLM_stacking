@@ -63,6 +63,8 @@ write.table(mod_out$nu[ids],
 # plot(mod_out$beta[1,-(1:burnin)], type = "l")
 # plot(mod_out$beta[2,], type = "l")
 
+# post_z_df <- read.table("post_MCMC_jan21/z_100.txt")
+# post_z <- as.matrix(post_z_df)
 # post_z <- mod_out$z
 # simdat$postmedian_z <- apply(post_z, 1, median)
 # leg_title <- TeX('$z(s)$')
