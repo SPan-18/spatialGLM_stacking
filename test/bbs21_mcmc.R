@@ -2,16 +2,18 @@ rm(list = ls())
 library(tidyverse)
 # library(spBayes)
 
-ci_beta <- function(mat){
-  out <- array(dim = c(ncol(mat), 5))
-  for(i in 1:ncol(mat)){
-    out[i, ] = c(mean(mat[, i]), sd(mat[, i]), 
-                 quantile(mat[, i], probs = c(0.025, 0.5, 0.975)))
-  }
-  colnames(out) <- c("Mean", "SD", "2.5%", "50%", "97.5%")
-  rownames(out) <- paste("beta", 1:ncol(mat) - 1, sep = '')
-  return(out)
-}
+source("../src/runsrc.R")
+
+# ci_beta <- function(mat){
+#   out <- array(dim = c(ncol(mat), 5))
+#   for(i in 1:ncol(mat)){
+#     out[i, ] = c(mean(mat[, i]), sd(mat[, i]), 
+#                  quantile(mat[, i], probs = c(0.025, 0.5, 0.975)))
+#   }
+#   colnames(out) <- c("Mean", "SD", "2.5%", "50%", "97.5%")
+#   rownames(out) <- paste("beta", 1:ncol(mat) - 1, sep = '')
+#   return(out)
+# }
 
 bbs21 <- read.csv("../data/BBS21.csv")
 bbs21 <- bbs21 %>%
@@ -22,7 +24,7 @@ bbs21 <- bbs21 %>%
 ids <- 1:nrow(bbs21)
 y <- as.numeric(bbs21[ids, "BirdCount"])
 X <- as.matrix(bbs21[, c("Longitude", "Latitude", "NCar", "Noise")])
-# X <- cbind(rep(1, length(y)), X)
+X <- cbind(rep(1, length(y)), X)
 S <- as.matrix(bbs21[ids, c("Longitude", "Latitude")])
 
 # beta.starting <- coefficients(glm(y~X, family="poisson"))
@@ -46,93 +48,121 @@ S <- as.matrix(bbs21[ids, c("Longitude", "Latitude")])
 # w.hat <- m.1$p.w.samples[,sub.samps]
 # beta.hat <- m.1$p.beta.theta.samples[sub.samps, 1:5]
 
-# write.table(beta.hat, 
-#             file = "bbs21_beta_hat.txt", 
+n_postsamp <- 100
+
+mod_out <- spGCM_adaMetropGibbs(y = y, X = X, S = S, 
+                                family = "poisson", 
+                                N.samp = n_postsamp,
+                                spCov = "matern",
+                                starting = list(phi = 500, nu = 1,
+                                                beta = rep(0, 5)),
+                                prior = list(phi = c(0.5, 1500),
+                                             nu = c(0.1, 2),
+                                             nu_xi = 1, 
+                                             nu_beta = 2.1,
+                                             nu_z = 2.1,
+                                             alpha_epsilon = 0.5))
+
+ids <- 1:n_postsamp
+# ids <- ids[-(1:(floor(0.1 * n_postsamp))+1)]
+# ids <- ids[c(rep(FALSE, 8), TRUE)]
+# 
+# write.table(mod_out$beta[, ids],
+#             file = "bbs21_MCMC/beta.txt",
 #             col.names = FALSE, row.names = FALSE)
-# write.table(w.hat, 
-#             file = "bbs21_z_hat.txt", 
+# write.table(mod_out$z[, ids],
+#             file = "bbs21_MCMC/z.txt",
+#             col.names = FALSE, row.names = FALSE)
+# write.table(mod_out$xi[, ids],
+#             file = "bbs21_MCMC/xi.txt",
+#             col.names = FALSE, row.names = FALSE)
+# write.table(mod_out$phi[ids],
+#             file = "bbs21_MCMC/phi.txt",
+#             col.names = FALSE, row.names = FALSE)
+# write.table(mod_out$nu[ids],
+#             file = "bbs21_MCMC/nu.txt",
 #             col.names = FALSE, row.names = FALSE)
 
-w.hat <- read.table("bbs21_z_hat.txt")
-beta.hat <- read.table("bbs21_beta_hat.txt")
-
-beta.hat <- beta.hat[c(rep(FALSE, 4), TRUE), ]
-w.hat <- w.hat[, c(rep(FALSE, 4), TRUE)]
-
-print(ci_beta(beta.hat))
-
-y.hat <- apply(exp(cbind(rep(1, nrow(X)), X) %*% t(beta.hat) + w.hat), 
-               2, function(x){rpois(dim(X)[1], x)})
-y.hat.mu <- apply(y.hat, 1, median)
-
-bbs21$yhat <- log(y.hat.mu)
-bbs21$postmedian_z <- apply(w.hat, 1, median)
-
-library("sf")
-library("rnaturalearth")
-library("rnaturalearthdata")
-library(sp)
-library(raster)
-library(viridis)
-library(MBA)
-
-surf <- mba.surf(bbs21[ , c("Longitude","Latitude", "yhat")], 
-                 no.X = 200, no.Y = 200, h = 5, m = 1, n = 1, 
-                 extend=FALSE)$xyz.est
-
-surf_rast <- raster(surf)
-usa <- ne_countries(country = "United States of America", 
-                    scale = "medium", returnclass = "sf")
-# us_rast <- crop(surf_rast, usa)
-us_rast <- raster::extract(surf_rast, usa, cellnumbers = TRUE)
-full_grid <- expand.grid(surf$x, rev(surf$y))
-us_df <- data.frame(full_grid[us_rast[[1]][, "cell"], ], 
-                    z = us_rast[[1]][, "value"])
-colnames(us_df) <- c("x", "y", "z")
-us_df <- na.omit(us_df)
-us_df$z <- exp(us_df$z)
-
-world <- ne_countries(scale = "medium", returnclass = "sf")
-latmin <- min(bbs21$Latitude)
-latmax <- max(bbs21$Latitude)
-lonmin <- min(bbs21$Longitude)
-lonmax <- max(bbs21$Longitude)
-lat_extra <- abs(latmax - latmin) * 0.01 # 0.0
-lon_extra <- abs(lonmax - lonmin) * 0.01 # 0.0
-latlim <- c(latmin - lat_extra, latmax + lat_extra)
-lonlim <- c(lonmin - lon_extra, lonmax + lon_extra)
-brks <- quantile(bbs21$yhat, c(0, 0.2, 0.4, 0.6, 0.8, 1))
-blue.red <- c("#2c7bb6", "#abd9e9", "#ffffbf", "#fdae61", "#d7191c")
-col.br <- colorRampPalette(blue.red)
-
-ggplot(data = world) +
-  geom_sf(fill = "antiquewhite") +
-  coord_sf(xlim = lonlim, 
-           ylim = latlim, expand = FALSE) +
-  # geom_raster(data = surf_df, aes(x = x, y = y, fill = z), alpha = 0.75) +
-  geom_raster(data = us_df, aes(x = x, y = y, fill = z), alpha = 0.9) +
-  # scale_fill_viridis(option = "plasma", trans = "log", direction = -1, 
-  #                    label = function(x) sprintf("%.1f", x)) +
-  scale_fill_gradientn(colours = col.br(20), trans = "log",
-                       label = function(x) sprintf("%.1f", x)) +
-  xlab("Longitude") +
-  ylab("Latitude") +
-  # labs(fill = latex2exp::TeX('y(s)$')) +
-  labs(fill = "Predicted\nAvian\nCount") +
-  theme_bw() +
-  theme(panel.grid.major = element_line(color = gray(.8), 
-                                        linetype = "dotted",
-                                        linewidth = 0.25), 
-        panel.background = element_rect(fill = "aliceblue"),
-        legend.position = c(0.92, 0.15),
-        legend.background = element_blank(),
-        legend.key.size = unit(0.3, 'cm'),
-        legend.title = element_text(size = 8),
-        legend.title.align = 0.5,
-        legend.text = element_text(size = 8),
-        axis.title.x=element_blank(),
-        axis.title.y=element_blank(),
-        aspect.ratio = 1)
+# w.hat <- read.table("bbs21_z_hat.txt")
+# beta.hat <- read.table("bbs21_beta_hat.txt")
+# 
+# beta.hat <- beta.hat[c(rep(FALSE, 4), TRUE), ]
+# w.hat <- w.hat[, c(rep(FALSE, 4), TRUE)]
+# 
+# print(ci_beta(beta.hat))
+# 
+# y.hat <- apply(exp(cbind(rep(1, nrow(X)), X) %*% t(beta.hat) + w.hat), 
+#                2, function(x){rpois(dim(X)[1], x)})
+# y.hat.mu <- apply(y.hat, 1, median)
+# 
+# bbs21$yhat <- log(y.hat.mu)
+# bbs21$postmedian_z <- apply(w.hat, 1, median)
+# 
+# library("sf")
+# library("rnaturalearth")
+# library("rnaturalearthdata")
+# library(sp)
+# library(raster)
+# library(viridis)
+# library(MBA)
+# 
+# surf <- mba.surf(bbs21[ , c("Longitude","Latitude", "yhat")], 
+#                  no.X = 200, no.Y = 200, h = 5, m = 1, n = 1, 
+#                  extend=FALSE)$xyz.est
+# 
+# surf_rast <- raster(surf)
+# usa <- ne_countries(country = "United States of America", 
+#                     scale = "medium", returnclass = "sf")
+# # us_rast <- crop(surf_rast, usa)
+# us_rast <- raster::extract(surf_rast, usa, cellnumbers = TRUE)
+# full_grid <- expand.grid(surf$x, rev(surf$y))
+# us_df <- data.frame(full_grid[us_rast[[1]][, "cell"], ], 
+#                     z = us_rast[[1]][, "value"])
+# colnames(us_df) <- c("x", "y", "z")
+# us_df <- na.omit(us_df)
+# us_df$z <- exp(us_df$z)
+# 
+# world <- ne_countries(scale = "medium", returnclass = "sf")
+# latmin <- min(bbs21$Latitude)
+# latmax <- max(bbs21$Latitude)
+# lonmin <- min(bbs21$Longitude)
+# lonmax <- max(bbs21$Longitude)
+# lat_extra <- abs(latmax - latmin) * 0.01 # 0.0
+# lon_extra <- abs(lonmax - lonmin) * 0.01 # 0.0
+# latlim <- c(latmin - lat_extra, latmax + lat_extra)
+# lonlim <- c(lonmin - lon_extra, lonmax + lon_extra)
+# brks <- quantile(bbs21$yhat, c(0, 0.2, 0.4, 0.6, 0.8, 1))
+# blue.red <- c("#2c7bb6", "#abd9e9", "#ffffbf", "#fdae61", "#d7191c")
+# col.br <- colorRampPalette(blue.red)
+# 
+# ggplot(data = world) +
+#   geom_sf(fill = "antiquewhite") +
+#   coord_sf(xlim = lonlim, 
+#            ylim = latlim, expand = FALSE) +
+#   # geom_raster(data = surf_df, aes(x = x, y = y, fill = z), alpha = 0.75) +
+#   geom_raster(data = us_df, aes(x = x, y = y, fill = z), alpha = 0.9) +
+#   # scale_fill_viridis(option = "plasma", trans = "log", direction = -1, 
+#   #                    label = function(x) sprintf("%.1f", x)) +
+#   scale_fill_gradientn(colours = col.br(20), trans = "log",
+#                        label = function(x) sprintf("%.1f", x)) +
+#   xlab("Longitude") +
+#   ylab("Latitude") +
+#   # labs(fill = latex2exp::TeX('y(s)$')) +
+#   labs(fill = "Predicted\nAvian\nCount") +
+#   theme_bw() +
+#   theme(panel.grid.major = element_line(color = gray(.8), 
+#                                         linetype = "dotted",
+#                                         linewidth = 0.25), 
+#         panel.background = element_rect(fill = "aliceblue"),
+#         legend.position = c(0.92, 0.15),
+#         legend.background = element_blank(),
+#         legend.key.size = unit(0.3, 'cm'),
+#         legend.title = element_text(size = 8),
+#         legend.title.align = 0.5,
+#         legend.text = element_text(size = 8),
+#         axis.title.x=element_blank(),
+#         axis.title.y=element_blank(),
+#         aspect.ratio = 1)
 
 
 

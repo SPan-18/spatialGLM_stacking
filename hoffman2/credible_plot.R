@@ -124,3 +124,54 @@ gridExtra::grid.arrange(p1, p2, ncol = 2)
 # plot(density(phi_MCMC[, 1]))
 # plot(density(nu_MCMC[, 1]))
 
+
+beta0_MCMC <- beta_MCMC1[, 1]
+beta1_MCMC <- beta_MCMC1[, 2]
+
+beta0_stack <- beta_stack1$beta0
+beta1_stack <- beta_stack1$beta1
+
+qseq <- seq(0, 1, length.out = 100)
+beta0_MCMC_q <- quantile(beta0_MCMC, qseq)
+beta0_stack_q <- quantile(beta0_stack, qseq)
+beta1_MCMC_q <- quantile(beta1_MCMC, qseq)
+beta1_stack_q <- quantile(beta1_stack, qseq)
+
+MCMCvsStack <- data.frame(beta0_MCMC_q = beta0_MCMC_q,
+                          beta0_stack_q = beta0_stack_q,
+                          beta1_MCMC_q = beta1_MCMC_q,
+                          beta1_stack_q = beta1_stack_q)
+
+p3 <- ggplot(MCMCvsStack, aes(x = beta0_MCMC_q, y = beta0_stack_q)) +
+  geom_point(col = "midnightblue", alpha = 0.2) +
+  geom_abline(slope = 1, intercept = 0, lty = 3, col = "red") +
+  labs(title="(Intercept)",
+       x ="MCMC", y = "Stacking") +
+  xlim(0, 10) +
+  ylim(0, 10) +
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        plot.title = element_text(hjust = 0.5),
+        aspect.ratio = 1)
+
+p4 <- ggplot(MCMCvsStack, aes(x = beta1_MCMC_q, y = beta1_stack_q)) +
+  geom_point(col = "midnightblue", alpha = 0.2) +
+  geom_abline(slope = 1, intercept = 0, lty = 3, col = "red") +
+  labs(title = latex2exp::TeX('$\\beta_1$'),
+       x ="MCMC", y = "Stacking") +
+  xlim(-1.5, 0.5) +
+  ylim(-1.5, 0.5) +
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        plot.title = element_text(hjust = 0.5),
+        aspect.ratio = 1)
+
+gridExtra::grid.arrange(p3, p4, ncol = 2)
+
+# plot(beta0_MCMC_q, beta0_stack_q, xlim = c(0, 10), ylim = c(0, 10))
+# abline(0, 1)
+# 
+# plot(beta1_MCMC_q, beta1_stack_q)
+# abline(0, 1)
+
+
