@@ -1,6 +1,6 @@
 library(tidyverse)
 
-YEAR <- 2015
+YEAR <- 2011
 
 routedat <- read.csv("routes.csv", header = TRUE)
 summarydat <- read.csv("MigrantSummary.csv", header = TRUE)
@@ -31,4 +31,20 @@ dat21_final <- dat21_route_veh %>%
   dplyr::select(-RPID) %>%
   dplyr::select(4, 1, 2, 3, 6, 7, 8, 9, 10, 5)
 
-# write.csv(dat21_final, "BBS15.csv")
+# Clean duplicate locations
+
+S_dup <- data.frame(table(dat21_final$Latitude))
+dup_lats <- S_dup$Var1[S_dup$Freq > 1]
+if(length(dup_lats) > 1){
+  for(i in 1:length(dup_lats)){
+    dup_ids <- which(dat21_final$Latitude == dup_lats[i])
+    keep_id <- min(dup_ids)
+    dat21_final[keep_id, "NCar"] <- max(dat21_final[dup_ids, "NCar"])
+    dat21_final[keep_id, "Noise"] <- max(dat21_final[dup_ids, "Noise"])
+    dat21_final[keep_id, "BirdCount"] <- sum(dat21_final[dup_ids, "BirdCount"])
+    dat21_final <- dat21_final[- setdiff(dup_ids, keep_id), ]
+  }
+  cat("Cleaned", length(dup_lats), "duplicate locations..\n")
+}
+
+write.csv(dat21_final, paste("BBS", YEAR-2000, ".csv", sep = ""))

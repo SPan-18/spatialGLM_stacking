@@ -71,3 +71,79 @@ sim_binom_nonsp <- function(n, n_binom, beta){
 # TEST
 # simdat = sim_binom(n = 1000, n_binom = 20, beta = c(1, -0.5), phi = 3.5)
 # write.csv(simdat, "../data/sim_binom1000.csv", row.names = FALSE)
+
+sim_dyncount <- function(n, Nt, beta, phi, phi_t){
+  
+  S <- data.frame(s1 = c(0,0,1,1,runif(n*Nt - 4, 0, 1)),
+                  s2 = c(0,1,0,1,runif(n*Nt - 4, 0, 1)))
+  
+  # p <- length(beta[[1]])
+  p <- length(beta) / Nt
+  
+  X <- cbind(rep(1, n*Nt), sapply(1:(p-1), function(x) rnorm(n*Nt)))
+  time <- rep(1:Nt, each = n)
+  D <- as.matrix(dist(S))
+  Dt <- as.matrix(dist(time))
+  V <- 0.4 * exp(- phi * D) * exp(- phi_t * Dt)
+  # V <- diag(n*Nt)
+  
+  z <- rmvn(1, rep(0, n*Nt), V)
+  # z <- rnorm(n*Nt)
+  # Xbeta <- array(dim = n*Nt)
+  # for(i in 1:Nt){
+  #   ids <- ((i-1)*n+1):(i*n)
+  #   Xbeta[ids] <- X[ids, ] %*% beta[[i]]
+  # }
+  bigX <- mkdynX(X, time)
+  Xbeta <- bigX %*% beta
+  mu <- Xbeta + as.numeric(z)
+  # mu <- X %*% beta + z + rnorm(n)
+  y <- array(dim = n*Nt)
+  for(i in 1:(n*Nt)){
+    y[i] <- rpois(1, exp(mu[i]))
+    # y[i] <- rnorm(1, mu[i], 1)
+  }
+  dat <- cbind(S, time, X, y = y, z = z)
+  # dat <- cbind(S, time, X, y = rnorm(n, mu, 1), z = z)
+  names(dat) = c("s1", "s2", "time", paste("x", 0:(p-1), sep = ""), "y", "z")
+  return(dat)
+}
+
+# simdat <- sim_dyncount(n = 100, Nt = 10,
+#                        beta = c(0.5, 0.7, 0.9, 1.2, 1.7, 2.2, 3, 4, 5.5, 7, 
+#                                 -1.5, 0.2, 1.3, -0.3, 0.01, 0.2, -0.5, 0.12, -0.6, 0.26),
+#                        phi = 3.5, phi_t = 0.5)
+# write.csv(simdat, "../data/sim_dyncount100.10.csv", row.names = FALSE)
+
+sim_sptcount <- function(n, Nt, beta, phi, phi_t){
+  
+  S <- data.frame(s1 = c(0,0,1,1,runif(n*Nt - 4, 0, 1)),
+                  s2 = c(0,1,0,1,runif(n*Nt - 4, 0, 1)))
+  
+  # p <- length(beta[[1]])
+  p <- length(beta)
+  
+  X <- cbind(rep(1, n*Nt), sapply(1:(p-1), function(x) rnorm(n*Nt)))
+  time <- rep(1:Nt, each = n)
+  D <- as.matrix(dist(S))
+  Dt <- as.matrix(dist(time))
+  V <- 0.4 * exp(- phi * D) * exp(- phi_t * Dt)
+  z <- array(dim = n*Nt*p)
+  for(i in 1:p){
+    z[((i-1)*n*Nt+1):(i*n*Nt)] <- rmvn(1, rep(0, n*Nt), V)
+  }
+  G <- makeG(X)
+  mu <- X %*% beta + G %*% z
+  y <- array(dim = n*Nt)
+  for(i in 1:(n*Nt)){
+    y[i] <- rpois(1, exp(mu[i]))
+  }
+  dat <- cbind(S, time, X, y = y, z = z)
+  names(dat) = c("s1", "s2", "time", paste("x", 0:(p-1), sep = ""), "y", "z")
+  return(dat)
+}
+
+# simdat <- sim_sptcount(n = 100, Nt = 3,
+#                        beta = c(5, -0.5),
+#                        phi = 3.5, phi_t = 0.5)
+# write.csv(simdat, "../data/sim_sptcount100.3.csv", row.names = FALSE)

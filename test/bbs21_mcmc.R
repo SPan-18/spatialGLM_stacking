@@ -91,7 +91,7 @@ ids <- 1:n_postsamp
 # 
 # print(ci_beta(beta.hat))
 # 
-# y.hat <- apply(exp(cbind(rep(1, nrow(X)), X) %*% t(beta.hat) + w.hat), 
+# y.hat <- apply(exp(cbind(rep(1, nrow(X)), X) %*% t(beta.hat) + w.hat),
 #                2, function(x){rpois(dim(X)[1], x)})
 # y.hat.mu <- apply(y.hat, 1, median)
 # 
@@ -106,17 +106,17 @@ ids <- 1:n_postsamp
 # library(viridis)
 # library(MBA)
 # 
-# surf <- mba.surf(bbs21[ , c("Longitude","Latitude", "yhat")], 
-#                  no.X = 200, no.Y = 200, h = 5, m = 1, n = 1, 
+# surf <- mba.surf(bbs21[ , c("Longitude","Latitude", "yhat")],
+#                  no.X = 200, no.Y = 200, h = 5, m = 1, n = 1,
 #                  extend=FALSE)$xyz.est
 # 
 # surf_rast <- raster(surf)
-# usa <- ne_countries(country = "United States of America", 
+# usa <- ne_countries(country = "United States of America",
 #                     scale = "medium", returnclass = "sf")
 # # us_rast <- crop(surf_rast, usa)
 # us_rast <- raster::extract(surf_rast, usa, cellnumbers = TRUE)
 # full_grid <- expand.grid(surf$x, rev(surf$y))
-# us_df <- data.frame(full_grid[us_rast[[1]][, "cell"], ], 
+# us_df <- data.frame(full_grid[us_rast[[1]][, "cell"], ],
 #                     z = us_rast[[1]][, "value"])
 # colnames(us_df) <- c("x", "y", "z")
 # us_df <- na.omit(us_df)
@@ -137,11 +137,11 @@ ids <- 1:n_postsamp
 # 
 # ggplot(data = world) +
 #   geom_sf(fill = "antiquewhite") +
-#   coord_sf(xlim = lonlim, 
+#   coord_sf(xlim = lonlim,
 #            ylim = latlim, expand = FALSE) +
 #   # geom_raster(data = surf_df, aes(x = x, y = y, fill = z), alpha = 0.75) +
 #   geom_raster(data = us_df, aes(x = x, y = y, fill = z), alpha = 0.9) +
-#   # scale_fill_viridis(option = "plasma", trans = "log", direction = -1, 
+#   # scale_fill_viridis(option = "plasma", trans = "log", direction = -1,
 #   #                    label = function(x) sprintf("%.1f", x)) +
 #   scale_fill_gradientn(colours = col.br(20), trans = "log",
 #                        label = function(x) sprintf("%.1f", x)) +
@@ -150,9 +150,9 @@ ids <- 1:n_postsamp
 #   # labs(fill = latex2exp::TeX('y(s)$')) +
 #   labs(fill = "Predicted\nAvian\nCount") +
 #   theme_bw() +
-#   theme(panel.grid.major = element_line(color = gray(.8), 
+#   theme(panel.grid.major = element_line(color = gray(.8),
 #                                         linetype = "dotted",
-#                                         linewidth = 0.25), 
+#                                         linewidth = 0.25),
 #         panel.background = element_rect(fill = "aliceblue"),
 #         legend.position = c(0.92, 0.15),
 #         legend.background = element_blank(),

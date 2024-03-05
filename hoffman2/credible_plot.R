@@ -174,4 +174,18 @@ gridExtra::grid.arrange(p3, p4, ncol = 2)
 # plot(beta1_MCMC_q, beta1_stack_q)
 # abline(0, 1)
 
+# post_phi <- read.table('post_MCMC_jan21/phi_100.txt')
+# post_nu <- read.table('post_MCMC_jan21/nu_100.txt')
+# 
+# LaplacesDemon::MCSE(beta1_MCMC)
+# LaplacesDemon::MCSE(beta0_MCMC)
+# LaplacesDemon::MCSE(post_phi[, 1])
+# LaplacesDemon::MCSE(post_nu[, 1])
+# 
+# LaplacesDemon::ESS(beta1_MCMC)
+# LaplacesDemon::ESS(beta0_MCMC)
+# LaplacesDemon::ESS(post_phi[, 1])
+# LaplacesDemon::ESS(post_nu[, 1])
+
+
 

@@ -4,7 +4,7 @@ CVXR_stacking_weights <- function(lpd_point, solver = "ECOS"){
   message("Using ", solver, " solver to get stacking weights.")
   if(sum(!is.finite(lpd_point)) > 0){
     minelpd <- min(lpd_point[is.finite(lpd_point)])
-    lpd_pointt[!is.finite(lpd_point)] <- minelpd - 1
+    lpd_point[!is.finite(lpd_point)] <- minelpd - 1
   }
   
   lpd_m = mean(lpd_point)
