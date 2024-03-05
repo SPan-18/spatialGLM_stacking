@@ -42,6 +42,7 @@ rDY <- function(n.samples, alpha, kappa, psi){
       stop("Invalid DY parameters input (psi2).")
     } 
   }else if(psi == "psi3"){
+    # cat(alpha, "\t", kappa, "\n")
     if(alpha > 0 && kappa > 0){
       w <- rgamma(n = n.samples, shape = alpha, rate = kappa)
       return(log(w))

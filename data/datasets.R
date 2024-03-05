@@ -3,3 +3,4 @@
 # shapley from spatstat: galaxy concentration
 # and some others: point process to binned poisson GLM
 
+# spatialVS: lyme disease

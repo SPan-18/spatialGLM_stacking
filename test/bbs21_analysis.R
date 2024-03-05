@@ -14,7 +14,7 @@ X <- as.matrix(bbs[, c("Longitude", "Latitude", "NCar", "Noise")])
 X <- cbind(rep(1, length(y)), X)
 S <- as.matrix(bbs[ids, c("Longitude", "Latitude")])
 
-n_postsamp <- 500
+n_postsamp <- 100
 
 mod_list <- create_model_list(G_decay = c(300, 400, 1200), 
                               G_smoothness = c(0.5, 1, 1.5),
@@ -51,7 +51,7 @@ library(raster)
 library(viridis)
 
 surf <- mba.surf(bbs[ , c("Longitude","Latitude", "yhat")], 
-                 no.X = 200, no.Y = 200, h = 6, m = 1, n = 1, 
+                 no.X = 200, no.Y = 200, h = 7, m = 1, n = 1, 
                  extend=FALSE)$xyz.est
 
 surf_rast <- raster(surf)
@@ -82,7 +82,7 @@ col.br <- colorRampPalette(blue.red)
 ggplot(data = world) +
   geom_sf(fill = "antiquewhite") +
   coord_sf(xlim = lonlim, 
-           ylim = latlim, expand = FALSE) +
+           ylim = c(25, 49.5), expand = FALSE) +
   # geom_raster(data = surf_df, aes(x = x, y = y, fill = z), alpha = 0.75) +
   geom_raster(data = us_df, aes(x = x, y = y, fill = z), alpha = 0.9) +
   # scale_fill_viridis(option = "plasma", trans = "log", direction = -1, 
@@ -106,7 +106,7 @@ ggplot(data = world) +
         legend.text = element_text(size = 8),
         axis.title.x=element_blank(),
         axis.title.y=element_blank(),
-        aspect.ratio = 1)
+        aspect.ratio = 0.8)
 
 # mod_glm <- glm(BirdCount ~ Longitude + Latitude + NCar + Noise, data = bbs,
 #                family = poisson(link = "log"))
