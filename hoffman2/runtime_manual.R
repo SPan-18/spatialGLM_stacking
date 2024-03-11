@@ -68,4 +68,4 @@ ggplot(rt_df, aes(x = n, color = variable)) +
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         # panel.border = element_blank(),
-        aspect.ratio = 0.67)
+        aspect.ratio = 0.66667)
