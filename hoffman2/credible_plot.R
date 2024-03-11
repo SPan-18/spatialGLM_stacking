@@ -64,7 +64,7 @@ library(ggplot2)
 # pal <- wesanderson::wes_palette("Darjeeling1", 2, type = "discrete")
 p1 <- ggplot(data = post_beta100, aes(x = beta0)) +
   geom_density(aes(fill = Method, color = Method), alpha = 0.3) +
-  # xlim(0, 10) +
+  xlim(0, 10) +
   # scale_color_manual(values = pal) +
   # scale_fill_manual(values = pal) +
   theme_bw() +
@@ -86,7 +86,7 @@ p2 <- ggplot(data = post_beta100, aes(x = beta1)) +
   geom_density(aes(fill = Method, color = Method), alpha = 0.3) +
   # scale_color_manual(values = c("#B4AF46", "#4682B4")) +
   # scale_fill_manual(values = c("#B4AF46", "#4682B4")) +
-  # xlim(-1.5, 0.5) +
+  xlim(-1.5, 0.5) +
   theme_bw() +
   xlab(latex2exp::TeX('$\\beta_1$')) +
   geom_point(aes(x = -0.5, y = 0),
@@ -166,7 +166,7 @@ p4 <- ggplot(MCMCvsStack, aes(x = beta1_MCMC_q, y = beta1_stack_q)) +
         plot.title = element_text(hjust = 0.5),
         aspect.ratio = 1)
 
-gridExtra::grid.arrange(p3, p4, ncol = 2)
+gridExtra::grid.arrange(p1, p2, ncol = 2)
 
 # plot(beta0_MCMC_q, beta0_stack_q, xlim = c(0, 10), ylim = c(0, 10))
 # abline(0, 1)
