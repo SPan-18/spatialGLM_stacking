@@ -82,7 +82,7 @@ for(k in 1:length(n_train_seq)){
 
 write.csv(mlpd_mat, "mlpd_poisson_stack.csv", row.names = F)
 
-mlpd_stack <- read.csv("mlpd_poisson_stack.csv")
-
-mlpd_mean <- aggregate(mlpd_stack[, 2], list(mlpd_stack[, 1]), FUN = mean) 
+# mlpd_stack <- read.csv("mlpd_poisson_stack.csv")
+# 
+# mlpd_mean <- aggregate(mlpd_stack[, 2], list(mlpd_stack[, 1]), FUN = mean) 
 
