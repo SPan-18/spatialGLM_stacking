@@ -4,13 +4,14 @@ source("../src/runsrc.R")
 
 n_h <- 100
 n_train_seq <- c(100, 200, 300, 400, 500)
+# n_train_seq <- c(50, 50)
 
 simdat <- read.csv("../data/sim_count1000.csv")
 
-mlpd_mat <- array(dim = c(5, 2))
+mlpd_mat <- array(dim = c(length(n_train_seq), 2))
 mlpd_mat[, 1] <- n_train_seq
 
-for(k in 1:length(n_train)){
+for(k in 1:length(n_train_seq)){
   
   n_train <- n_train_seq[k]
   # Test on rows 1:n_h and train on next n_train
@@ -30,7 +31,7 @@ for(k in 1:length(n_train)){
   mod_list <- create_model_list(G_decay = c(3, 4, 10), 
                                 G_smoothness = c(0.5, 1, 1.5),
                                 G_epsilon = c(0.25, 0.5),
-                                G_nuxi = 0,
+                                G_nuxi = 1,
                                 G_nubeta = 2.1, G_nuz = 2.1)
   
   m_out <- spGLM_stack(y = y, X = X, S = S, N.samp = n_postsamp,
@@ -45,7 +46,7 @@ for(k in 1:length(n_train)){
   lpd_mat <- array(dim = c(n_h, L))
   
   for(i in 1:L){
-    cat("Model", i, "\n")
+    cat("n = ", n_train, " Model", i, "\n")
     phi <- mod_list[[i]]$phi
     nu <- mod_list[[i]]$nu_matern
     nu_z <- mod_list[[i]]$nu_z
