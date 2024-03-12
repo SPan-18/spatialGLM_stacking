@@ -3,8 +3,8 @@ rm(list = ls())
 source("../src/runsrc.R")
 
 n_h <- 100
-# n_train_seq <- c(100, 200, 300, 400, 500)
-n_train_seq <- c(50, 50)
+n_train_seq <- c(100, 200, 300, 400, 500)
+# n_train_seq <- c(50, 50)
 
 simdat <- read.csv("../data/sim_count1000.csv")
 
