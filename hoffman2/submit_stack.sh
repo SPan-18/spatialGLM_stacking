@@ -18,6 +18,6 @@ module load cmake/3.19.5
 
 # run R code
 echo 'Running h_runtime_comparison.R' #prints this quote to joblog.jobidnumber
-Rscript h_stack_runtime.R > output.$JOB_ID 2>&1
+Rscript h_poisson_mlpd.R > output.$JOB_ID 2>&1
 # command-line arguments: number of samples, number of repetitions, seed, command to create n samples
 # outputs any text (stdout and stderr) to output.$JOB_ID
