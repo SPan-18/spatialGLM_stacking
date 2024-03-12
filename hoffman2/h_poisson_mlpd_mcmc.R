@@ -26,7 +26,7 @@ for(k in 1:length(n_train_seq)){
   X <- as.matrix(simdat_t[, grep("x", names(simdat_t))])
   S <- as.matrix(simdat_t[, c("s1", "s2")])
   
-  n_postsamp <- 2000
+  n_postsamp <- 1000
   
   mod_out <- spGCM_adaMetropGibbs(y = y, X = X, S = S, 
                                   family = "poisson", 
