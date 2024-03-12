@@ -86,7 +86,7 @@ p2 <- ggplot(data = post_beta100, aes(x = beta1)) +
   geom_density(aes(fill = Method, color = Method), alpha = 0.3) +
   # scale_color_manual(values = c("#B4AF46", "#4682B4")) +
   # scale_fill_manual(values = c("#B4AF46", "#4682B4")) +
-  xlim(-1.5, 0.5) +
+  xlim(-2.5, 1.5) +
   theme_bw() +
   xlab(latex2exp::TeX('$\\beta_1$')) +
   geom_point(aes(x = -0.5, y = 0),
@@ -102,7 +102,7 @@ p2 <- ggplot(data = post_beta100, aes(x = beta1)) +
         axis.title.y=element_blank(),
         aspect.ratio = 1)
 
-gridExtra::grid.arrange(p1, p2, ncol = 2)
+# gridExtra::grid.arrange(p1, p2, ncol = 2)
 
 
 # post_beta100 <- reshape2::melt(post_beta100, id.vars = "Method")
@@ -143,8 +143,8 @@ MCMCvsStack <- data.frame(beta0_MCMC_q = beta0_MCMC_q,
                           beta1_stack_q = beta1_stack_q)
 
 p3 <- ggplot(MCMCvsStack, aes(x = beta0_MCMC_q, y = beta0_stack_q)) +
-  geom_point(col = "midnightblue", alpha = 0.2) +
   geom_abline(slope = 1, intercept = 0, lty = 3, col = "red") +
+  geom_point(col = "grey20", size = 2, alpha = 0.3) +
   labs(title="(Intercept)",
        x ="MCMC", y = "Stacking") +
   xlim(0, 10) +
@@ -155,8 +155,8 @@ p3 <- ggplot(MCMCvsStack, aes(x = beta0_MCMC_q, y = beta0_stack_q)) +
         aspect.ratio = 1)
 
 p4 <- ggplot(MCMCvsStack, aes(x = beta1_MCMC_q, y = beta1_stack_q)) +
-  geom_point(col = "midnightblue", alpha = 0.2) +
   geom_abline(slope = 1, intercept = 0, lty = 3, col = "red") +
+  geom_point(col = "grey20", size = 2, alpha = 0.3) +
   labs(title = latex2exp::TeX('$\\beta_1$'),
        x ="MCMC", y = "Stacking") +
   xlim(-1.5, 0.5) +
@@ -166,7 +166,8 @@ p4 <- ggplot(MCMCvsStack, aes(x = beta1_MCMC_q, y = beta1_stack_q)) +
         plot.title = element_text(hjust = 0.5),
         aspect.ratio = 1)
 
-gridExtra::grid.arrange(p1, p2, ncol = 2)
+# gridExtra::grid.arrange(p3, p4, ncol = 2)
+gridExtra::grid.arrange(p1, p2, p3, p4, ncol = 4)
 
 # plot(beta0_MCMC_q, beta0_stack_q, xlim = c(0, 10), ylim = c(0, 10))
 # abline(0, 1)

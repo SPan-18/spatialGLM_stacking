@@ -2,10 +2,10 @@ rm(list = ls())
 
 source("../src/runsrc.R")
 
-simdat <- read.csv("../data/sim_count5000.csv")
+simdat <- read.csv("../data/sim_count1000.csv")
 
 # Test on rows 1:100
-simdat <- simdat[1:100, ]
+simdat <- simdat[1:1000, ]
 y <- as.numeric(simdat$y)
 X <- as.matrix(simdat[, grep("x", names(simdat))])
 S <- as.matrix(simdat[, c("s1", "s2")])
@@ -29,7 +29,7 @@ m_out <- spGLM_stack(y = y, X = X, S = S, N.samp = n_postsamp,
 # w_hat <- Mosek_stacking_weights(elpd_mat)
 
 postrun_samps <- postrunsampler(m_out, N.samp = n_postsamp)
-post_z <- postrun_samps$z
+post_z <- postrun_samps$z + postrun_samps$xi
 post_beta <- postrun_samps$beta
 
 # y.hat <- apply(exp(X %*% post_beta + post_z), 2, function(x){rpois(dim(X)[1], x)})
