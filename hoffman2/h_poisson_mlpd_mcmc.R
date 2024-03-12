@@ -77,6 +77,7 @@ for(k in 1:length(n_train_seq)){
   
   pd_mc <- apply(pd_mat, 1, mean)
   mlpd <- mean(log(pd_mc))
+  cat("n = ", n_train, " mlpd = ", mlpd, "\n")
   
   mlpd_mat[k, 2] <- mlpd
 }
