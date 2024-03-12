@@ -11,6 +11,8 @@ simdat <- read.csv("../data/sim_count1000.csv")
 mlpd_mat <- array(dim = c(length(n_train_seq), 2))
 mlpd_mat[, 1] <- n_train_seq
 
+bigD <- as.matrix(dist(rbind(S_h, S)))
+
 for(k in 1:length(n_train_seq)){
   
   n_train <- n_train_seq[k]
@@ -41,7 +43,6 @@ for(k in 1:length(n_train_seq)){
                        mc.cores = 6,
                        mod_params_list = mod_list)
   
-  bigD <- as.matrix(dist(rbind(S_h, S)))
   L <- length(m_out$models)
   lpd_mat <- array(dim = c(n_h, L))
   
