@@ -14,6 +14,7 @@ mlpd_mat[, 1] <- n_train_seq
 for(k in 1:length(n_train_seq)){
   
   n_train <- n_train_seq[k]
+  cat("n = ", n_train, "\n")
   # Test on rows 1:n_h and train on next n_train
   simdat_h <- simdat[1:n_h, ]
   simdat_t <- simdat[n_h + 1:n_train, ]
