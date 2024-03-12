@@ -3,8 +3,14 @@
 predict_z <- function(z_post, J, cholV, V_tilde, nu_z, 
                       Rfast_parallel = FALSE){
   m <- dim(V_tilde)[1]
-  n.samp <- dim(z_post)[2]
-  n <- dim(z_post)[1]
+  if(is.null(dim(z_post))){
+    n.samp <- 1
+    n <- length(z_post)
+  }else{
+    n.samp <- dim(z_post)[2]
+    n <- dim(z_post)[1]
+  }
+  
   z_tilde <- backsolve(cholV, z_post, transpose = TRUE)
   # browser()
   u <- rgamma(n.samp, 0.5 * (nu_z + n), 0.5)
