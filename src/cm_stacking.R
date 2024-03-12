@@ -314,6 +314,24 @@ postrunsampler <- function(out, N.samp){
               xi = post_samples[(n.obs+p.obs+1):(2*n.obs+p.obs), ]))
 }
 
+postrunsampler2 <- function(out, N.samp){
+  stack_weights <- round(as.numeric(out$weights), 3)
+  n_post <- dim(out$models[[1]]$beta)[2]
+  p.obs <- dim(out$models[[1]]$beta)[1]
+  n.obs <- dim(out$models[[1]]$z)[1]
+  n.tilde <- dim(out$models[[1]]$z_tilde)[1]
+  ids <- sample(1:n_post, size = N.samp, replace = TRUE)
+  post_samples <- sapply(1:N.samp, function(x){
+    model_id <- sample(1:length(out$models), 1, prob = stack_weights)
+    return(c(out$models[[model_id]]$beta[, ids[x]], 
+             out$models[[model_id]]$z[, ids[x]],
+             out$models[[model_id]]$z_tilde[, ids[x]]))
+  })
+  return(list(beta = post_samples[1:p.obs, ],
+              z = post_samples[(p.obs+1):(n.obs+p.obs), ],
+              z_tilde = post_samples[(n.obs+p.obs+1):(n.obs+p.obs+n.tilde), ]))
+}
+
 # TEST
 
 
