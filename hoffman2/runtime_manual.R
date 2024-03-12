@@ -45,6 +45,27 @@ rt_df <- run_time_pred %>%
   select(n, stack_rt, spBayes_rt) %>%
   gather(key = "variable", value = "value", -n)
 
+ggplot(rt_df, aes(x = n, linetype = variable)) +
+  geom_line(aes(y = value)) +
+  geom_point(data = rt_obs, size = 1, aes(x = n, y = value)) +
+  # scale_x_continuous(trans = 'log10') +
+  scale_y_continuous(trans='log10') +
+  xlab('Sample size') +
+  ylab(TeX('$\\log_{10}$Time')) +
+  # labs(linetype = "Method") +
+  # scale_color_discrete(labels = c("MCMC", "Stacking")) +
+  scale_linetype_manual(values = c("dashed", "solid")) +
+  theme_bw() +
+  theme(legend.position="none",
+        axis.title.x = element_text(size = 11),
+        axis.title.y = element_text(size = 11),
+        # axis.line = element_line(color='black'),
+        panel.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        # panel.border = element_blank(),
+        aspect.ratio = 0.66667)
+
 ggplot(rt_df, aes(x = n, color = variable)) +
   geom_line(aes(y = value)) +
   geom_point(data = rt_obs, aes(x = n, y = value)) +

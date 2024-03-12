@@ -32,8 +32,8 @@ pointref_plot=function(tab, colname,
     labs(fill = legend_title) +
     theme_bw() +
     theme(legend.title = element_text(size = 10, hjust = 0.25),
-          axis.title.x = element_text(family = "mono"),
-          axis.title.y = element_text(family = "mono"),
+          # axis.title.x = element_text(family = "mono"),
+          # axis.title.y = element_text(family = "mono"),
       # axis.line = element_line(color='black'),
       panel.background = element_blank(),
       panel.grid.major = element_blank(),
