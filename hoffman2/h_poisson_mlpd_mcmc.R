@@ -6,7 +6,7 @@ simdat <- read.csv("../data/sim_count1000.csv")
 
 n_h <- 100
 n_train_seq <- c(100, 200, 300, 400, 500)
-# n_train_seq <- c(50, 50)
+# n_train_seq <- c(50, 100, 200)
 
 mlpd_mat <- array(dim = c(length(n_train_seq), 2))
 mlpd_mat[, 1] <- n_train_seq
@@ -26,7 +26,7 @@ for(k in 1:length(n_train_seq)){
   X <- as.matrix(simdat_t[, grep("x", names(simdat_t))])
   S <- as.matrix(simdat_t[, c("s1", "s2")])
   
-  n_postsamp <- 10000
+  n_postsamp <- 2000
   
   mod_out <- spGCM_adaMetropGibbs(y = y, X = X, S = S, 
                                   family = "poisson", 
@@ -38,13 +38,13 @@ for(k in 1:length(n_train_seq)){
                                                nu = c(0.1, 2),
                                                nu_xi = 1, 
                                                nu_beta = 2.1,
-                                               nu_z = 2.1,
+                                               nu_z = 3,
                                                alpha_epsilon = 0.5))
   
   ids <- 1:n_postsamp
   ids <- ids[-(1:(floor(0.1 * n_postsamp))+1)]
   ids <- ids[c(rep(FALSE, 8), TRUE)]
-  ids <- sample(ids, size = 1000, replace = FALSE)
+  # ids <- sample(ids, size = 1000, replace = FALSE)
   
   post_beta <- mod_out$beta[, ids]
   post_z <- mod_out$z[, ids]
@@ -58,7 +58,7 @@ for(k in 1:length(n_train_seq)){
     
     phi <- post_phi[i]
     nu <- post_nu[i]
-    nu_z <- 2.1
+    nu_z <- 3
     
     bigV <- matern(u = bigD, phi = 1/phi, kappa = nu)
     chol_train <- chol(bigV[n_h + 1:n_train, n_h + 1:n_train])
@@ -67,8 +67,6 @@ for(k in 1:length(n_train_seq)){
                          cholV = chol_train,
                          V_tilde = bigV[1:n_h, 1:n_h],
                          nu_z = nu_z)
-    # z_tilde[which(z_tilde < -500)] <- -500
-    # z_tilde[which(z_tilde > 500)] <- 500
     
     mu <- exp(X_h %*% post_beta[, i] + z_tilde)
     y_pred <- rpois(1:length(mu), mu)
