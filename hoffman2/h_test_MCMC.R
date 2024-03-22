@@ -5,12 +5,12 @@ source("../src/runsrc.R")
 simdat <- read.csv("../data/sim_count1000.csv")
 
 # Test on rows 1:100
-simdat <- simdat[1:100, ]
+simdat <- simdat[1:1000, ]
 y <- as.numeric(simdat$y)
 X <- as.matrix(simdat[, grep("x", names(simdat))])
 S <- as.matrix(simdat[, c("s1", "s2")])
 
-n_postsamp <- 10000
+n_postsamp <- 1000
 
 mod_out <- spGCM_adaMetropGibbs(y = y, X = X, S = S, 
                                 family = "poisson", 
@@ -27,24 +27,24 @@ mod_out <- spGCM_adaMetropGibbs(y = y, X = X, S = S,
 
 
 ids <- 1:n_postsamp
-# ids <- ids[-(1:(floor(0.1 * n_postsamp))+1)]
-# ids <- ids[c(rep(FALSE, 8), TRUE)]
+ids <- ids[-(1:(floor(0.1 * n_postsamp))+1)]
+ids <- ids[c(rep(FALSE, 8), TRUE)]
 
 # 
 write.table(mod_out$beta[, ids],
-            file = "post_MCMC/beta_100.txt",
+            file = "post_MCMC/beta.txt",
             col.names = FALSE, row.names = FALSE)
 write.table(mod_out$z[, ids],
-            file = "post_MCMC/z_100.txt",
+            file = "post_MCMC/z.txt",
             col.names = FALSE, row.names = FALSE)
 write.table(mod_out$xi[, ids],
-            file = "post_MCMC/xi_100.txt",
+            file = "post_MCMC/xi.txt",
             col.names = FALSE, row.names = FALSE)
 write.table(mod_out$phi[ids],
-            file = "post_MCMC/phi_100.txt",
+            file = "post_MCMC/phi.txt",
             col.names = FALSE, row.names = FALSE)
 write.table(mod_out$nu[ids],
-            file = "post_MCMC/nu_100.txt",
+            file = "post_MCMC/nu.txt",
             col.names = FALSE, row.names = FALSE)
 
 
@@ -64,7 +64,7 @@ write.table(mod_out$nu[ids],
 # plot(mod_out$beta[1,-(1:burnin)], type = "l")
 # plot(mod_out$beta[2,], type = "l")
 
-# post_z_df <- read.table("post_MCMC_jan21/z_100.txt")
+# post_z_df <- read.table("post_MCMC/z.txt")
 # post_z <- as.matrix(post_z_df)
 # post_z <- mod_out$z
 # simdat$postmedian_z <- apply(post_z, 1, median)
