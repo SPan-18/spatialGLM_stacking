@@ -27,8 +27,8 @@ mod_out <- spGCM_adaMetropGibbs(y = y, X = X, S = S,
 
 
 ids <- 1:n_postsamp
-ids <- ids[-(1:(floor(0.1 * n_postsamp))+1)]
-ids <- ids[c(rep(FALSE, 8), TRUE)]
+# ids <- ids[-(1:(floor(0.1 * n_postsamp))+1)]
+# ids <- ids[c(rep(FALSE, 8), TRUE)]
 
 # 
 write.table(mod_out$beta[, ids],
@@ -46,30 +46,3 @@ write.table(mod_out$phi[ids],
 write.table(mod_out$nu[ids],
             file = "post_MCMC/nu.txt",
             col.names = FALSE, row.names = FALSE)
-
-
-# hist(mod_out$beta[1,])
-# hist(mod_out$beta[2,])
-# 
-# ids <- 1:n_postsamp
-# ids <- ids[-(1:floor(0.1 * n_postsamp))]
-# ids <- ids[c(rep(FALSE, 9), TRUE)]
-# plot(density(mod_out$beta[1, ids]), xlim = c(2, 8))
-
-# plot(density(mod_out$phi))
-# plot(density(mod_out$nu))
-# 
-# plot(mod_out$phi, type = "l")
-# plot(mod_out$nu, type = "l")
-# plot(mod_out$beta[1,-(1:burnin)], type = "l")
-# plot(mod_out$beta[2,], type = "l")
-
-# post_z_df <- read.table("post_MCMC/z.txt")
-# post_z <- as.matrix(post_z_df)
-# post_z <- mod_out$z
-# simdat$postmedian_z <- apply(post_z, 1, median)
-# leg_title <- TeX('$z(s)$')
-# p1 <- pointref_plot(simdat, "z", legend_title = leg_title)
-# p6 <- pointref_plot(simdat, "postmedian_z", legend_title = leg_title)
-# gridExtra::grid.arrange(p1, p6, ncol = 2)
-

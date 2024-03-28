@@ -26,20 +26,26 @@ pointref_plot=function(tab, colname,
     geom_raster(aes(fill = z)) +
     # scale_fill_gradientn(colours = col.br(100)) +
     # scale_fill_gradientn(colours = col.RdBu(100)) +
-    scale_fill_distiller(palette = "RdYlBu", direction = -1) +
+    scale_x_continuous(limits = range, expand = c(0, 0),
+                       label = function(x) sprintf("%.1f", x)) +
+    scale_y_continuous(limits = range, expand = c(0, 0), # expansion(mult = c(0, 0.02))
+                       label = function(x) sprintf("%.1f", x)) +
+    scale_fill_distiller(palette = "RdYlBu", direction = -1,
+                         label = function(x) sprintf("%.1f", x)) +
     xlab("Easting") +
     ylab("Northing") +
     labs(fill = legend_title) +
     theme_bw() +
-    theme(legend.title = element_text(size = 10, hjust = 0.25),
-          # axis.title.x = element_text(family = "mono"),
-          # axis.title.y = element_text(family = "mono"),
-      # axis.line = element_line(color='black'),
-      panel.background = element_blank(),
-      panel.grid.major = element_blank(),
-      panel.grid.minor = element_blank(),
-      # panel.border = element_blank(),
-      aspect.ratio = 1)
+    theme(
+      # axis.line = element_line(),
+      axis.ticks = element_line(linewidth = 0.25),
+          panel.background = element_blank(), 
+          panel.grid = element_blank(), 
+          # panel.border = element_blank(), 
+          legend.title = element_text(size = 10, hjust = 0.25), 
+          legend.box.just = "center", 
+          # plot.margin=grid::unit(c(0,0,0,0), "mm"),
+          aspect.ratio = 1)
   
   if(!is.null(title)){
     plot <- plot + labs(title = title)  +
