@@ -2,16 +2,16 @@ rm(list = ls())
 
 # merge BBS data 2010-2019
 
-bbs10 <- read.csv("BBS10.csv")
-bbs11 <- read.csv("BBS11.csv")
-bbs12 <- read.csv("BBS12.csv")
-bbs13 <- read.csv("BBS13.csv")
-bbs14 <- read.csv("BBS14.csv")
-bbs15 <- read.csv("BBS15.csv")
-bbs16 <- read.csv("BBS16.csv")
-bbs17 <- read.csv("BBS17.csv")
-bbs18 <- read.csv("BBS18.csv")
-bbs19 <- read.csv("BBS19.csv")
+bbs10 <- read.csv("bbs/BBS10.csv")
+bbs11 <- read.csv("bbs/BBS11.csv")
+bbs12 <- read.csv("bbs/BBS12.csv")
+bbs13 <- read.csv("bbs/BBS13.csv")
+bbs14 <- read.csv("bbs/BBS14.csv")
+bbs15 <- read.csv("bbs/BBS15.csv")
+bbs16 <- read.csv("bbs/BBS16.csv")
+bbs17 <- read.csv("bbs/BBS17.csv")
+bbs18 <- read.csv("bbs/BBS18.csv")
+bbs19 <- read.csv("bbs/BBS19.csv")
 # bbs21 <- read.csv("BBS21.csv")
 
 # bbs21 <- bbs21 %>% 
