@@ -29,39 +29,16 @@ m_out <- spGLM_stack(y = y, X = X, S = S, N.samp = n_postsamp,
 # w_hat <- Mosek_stacking_weights(elpd_mat)
 
 postrun_samps <- postrunsampler(m_out, N.samp = n_postsamp)
-post_z <- postrun_samps$z + postrun_samps$xi
+post_z <- postrun_samps$z
 post_beta <- postrun_samps$beta
+post_xi <- postrun_samps$xi
 
-# y.hat <- apply(exp(X %*% post_beta + post_z), 2, function(x){rpois(dim(X)[1], x)})
-# y.hat.mu <- apply(y.hat, 1, median)
-
-print(ci_beta(t(post_beta)))
-# print(ci_beta(t(m_out$models[[2]]$beta)))
-
-### Compare posterior of z with true z
-
-# simdat$postmean_z <- apply(post_z, 1, mean)
-# simdat$postsd_z <- apply(post_z, 1, sd)
-simdat$postmedian_z <- apply(post_z, 1, median)
-# simdat$yhat <- y.hat.mu
-# simdat$postcred1_z <- apply(post_z, 1, function(x) quantile(x, 0.025))
-# simdat$postcred2_z <- apply(post_z, 1, function(x) quantile(x, 0.975))
-# 
-leg_title <- TeX('$z(s)$')
-p1 <- pointref_plot(simdat, "z", legend_title = leg_title)
-# p2 <- pointref_plot(simdat, "postmean_z", legend_title = leg_title)
-# p3 <- pointref_plot(simdat, "postsd_z", legend_title = leg_title)
-# p4 <- pointref_plot(simdat, "postcred1_z", legend_title = leg_title)
-# p5 <- pointref_plot(simdat, "postcred2_z", legend_title = leg_title)
-p6 <- pointref_plot(simdat, "postmedian_z", legend_title = leg_title)
-gridExtra::grid.arrange(p1, p6, ncol = 2)
-
-# pointref_plot(simdat, "y", legend_title = "y")
-# pointref_plot(simdat, "yhat", legend_title = "y_hat")
-
-# ggsave("true_z_pois.pdf", plot = p1, width=4, height=4, units='in')
-# ggsave("postmedian_z_pois.pdf", plot = p6, width=4, height=4, units='in')
-
-### Histogram of beta
-# post_beta <- data.frame(intercept = postrun_samps$beta[1, ],
-#                         beta = postrun_samps$beta[2, ])
+write.table(post_beta,
+            file = "post_stacking/beta.txt",
+            col.names = FALSE, row.names = FALSE)
+write.table(post_z,
+            file = "post_stacking/z.txt",
+            col.names = FALSE, row.names = FALSE)
+write.table(post_xi,
+            file = "post_stacking/xi.txt",
+            col.names = FALSE, row.names = FALSE)

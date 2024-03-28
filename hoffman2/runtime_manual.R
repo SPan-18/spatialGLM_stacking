@@ -1,4 +1,4 @@
-rm(list = ls())
+# rm(list = ls())
 
 library(latex2exp)
 library(ggplot2)
@@ -45,16 +45,18 @@ rt_df <- run_time_pred %>%
   select(n, stack_rt, spBayes_rt) %>%
   gather(key = "variable", value = "value", -n)
 
-ggplot(rt_df, aes(x = n, linetype = variable)) +
+p_rt <- ggplot(rt_df, aes(x = n, linetype = variable)) +
   geom_line(aes(y = value)) +
   # geom_point(data = rt_obs, size = 1, aes(x = n, y = value)) +
-  # scale_x_continuous(trans = 'log10') +
-  scale_y_continuous(trans='log10') +
+  scale_y_continuous(trans='log10',
+                     breaks = c(1e2, 1e3, 1e4, 1e5, 1e6),
+                     labels = c("1E2", "1E3", "1E4", "1E5", "1E6")) +
   xlab('Sample size') +
   ylab(TeX('$\\log_{10}$Time')) +
   # labs(linetype = "Method") +
   # scale_color_discrete(labels = c("MCMC", "Stacking")) +
   scale_linetype_manual(values = c("dashed", "solid")) +
+  labs(title = "") +
   theme_bw() +
   theme(legend.position="none",
         axis.title.x = element_text(size = 11),
@@ -63,6 +65,7 @@ ggplot(rt_df, aes(x = n, linetype = variable)) +
         panel.background = element_blank(),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
+        plot.title = element_text(hjust = 0.5, size = 10),
         # panel.border = element_blank(),
         aspect.ratio = 0.66667)
 
