@@ -47,4 +47,4 @@ if(length(dup_lats) > 1){
   cat("Cleaned", length(dup_lats), "duplicate locations..\n")
 }
 
-write.csv(dat21_final, paste("BBS", YEAR-2000, ".csv", sep = ""))
+write.csv(dat21_final, paste("bbs/BBS", YEAR-2000, ".csv", sep = ""))
