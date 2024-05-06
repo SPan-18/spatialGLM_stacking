@@ -3,7 +3,7 @@ library(tidyverse)
 
 source("../src/runsrc.R")
 
-bbs21 <- read.csv("../data/BBS21.csv")
+bbs21 <- read.csv("../data/bbs/BBS21.csv")
 bbs21 <- bbs21 %>%
   filter(Latitude < 60) %>%
   filter(!(RouteDataID == 6376050)) %>%

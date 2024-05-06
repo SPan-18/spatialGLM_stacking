@@ -60,6 +60,19 @@ create_model_list <- function(G_decay, G_smoothness, G_timedecay = NULL,
                   nu_xi = models[x, "nu_xi"],
                   nu_beta = models[x, "nu_beta"],
                   nu_z = models[x, "nu_z"]))})
+  }else if(is.null(G_rho)){
+    models <- expand.grid(G_decay, G_smoothness, G_timedecay,
+                          G_epsilon, G_nuxi, G_nubeta, G_nuz)
+    names(models) <- c("phi", "smooth", "phi_t", "alpha_epsilon", 
+                       "nu_xi", "nu_beta", "nu_z")
+    model_list <- lapply(1:nrow(models), function(x){
+      return(list(phi = models[x, "phi"],
+                  nu_matern = models[x, "smooth"],
+                  phi_t = models[x, "phi_t"],
+                  alpha_epsilon = models[x, "alpha_epsilon"],
+                  nu_xi = models[x, "nu_xi"],
+                  nu_beta = models[x, "nu_beta"],
+                  nu_z = models[x, "nu_z"]))})
   }else{
     models <- expand.grid(G_decay, G_smoothness, G_timedecay, G_rho,
                           G_epsilon, G_nuxi, G_nubeta, G_nuz)

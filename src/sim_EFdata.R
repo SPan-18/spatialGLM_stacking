@@ -115,7 +115,7 @@ sim_dyncount <- function(n, Nt, beta, phi, phi_t){
 #                        phi = 3.5, phi_t = 0.5)
 # write.csv(simdat, "../data/sim_dyncount100.10.csv", row.names = FALSE)
 
-sim_sptcount <- function(n, Nt, beta, phi, phi_t){
+sim_sptcount2 <- function(n, Nt, beta, phi, phi_t){
   
   S <- data.frame(s1 = c(0,0,1,1,runif(n*Nt - 4, 0, 1)),
                   s2 = c(0,1,0,1,runif(n*Nt - 4, 0, 1)))
@@ -147,3 +147,33 @@ sim_sptcount <- function(n, Nt, beta, phi, phi_t){
 #                        beta = c(5, -0.5),
 #                        phi = 3.5, phi_t = 0.5)
 # write.csv(simdat, "../data/sim_sptcount100.3.csv", row.names = FALSE)
+
+
+sim_sptcount <- function(n, Nt, beta, phi, phi_t){
+  
+  S <- data.frame(s1 = c(0,0,1,1,runif(n*Nt - 4, 0, 1)),
+                  s2 = c(0,1,0,1,runif(n*Nt - 4, 0, 1)))
+  
+  # p <- length(beta[[1]])
+  p <- length(beta)
+  
+  X <- cbind(rep(1, n*Nt), sapply(1:(p-1), function(x) rnorm(n*Nt)))
+  time <- rep(1:Nt, each = n)
+  D <- as.matrix(dist(S))
+  Dt <- as.matrix(dist(time))
+  V <- 0.4 * exp(- phi * D) * exp(- phi_t * Dt)
+  z <- rmvn(1, rep(0, n*Nt), V)
+  mu <- X %*% beta + z
+  y <- array(dim = n*Nt)
+  for(i in 1:(n*Nt)){
+    y[i] <- rpois(1, exp(mu[i]))
+  }
+  dat <- cbind(S, time, X, y = y, z = z)
+  names(dat) = c("s1", "s2", "time", paste("x", 0:(p-1), sep = ""), "y", "z")
+  return(dat)
+}
+
+# simdat <- sim_sptcount(n = 100, Nt = 3,
+#                        beta = c(5, -0.5),
+#                        phi = 3.5, phi_t = 0.5)
+# write.csv(simdat, "../data/sim_sptmpcount100.3.csv", row.names = FALSE)
