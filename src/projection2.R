@@ -38,14 +38,15 @@ projection2 <- function(X, X_tilde, chol_p, chol_nr,
   
   v10 <- sapply(1:n, function(x){ 
     trsolve_prechol(chol_nr[[x]], v9[x]*X_tilde[x, ]) })
+  v10 <- - v10 + v3
   
   return(c(as.numeric(v8), - as.numeric(v7),
-           c(v10)))
+           as.numeric(c(v10))))
 }
 
 # test projection2
 # set.seed(1729)
-# n <- 10
+# n <- 1000
 # p <- 3
 # r <- 3
 # X1 <- cbind(rep(1, n), sapply(1:(p-1), function (x) rnorm(n)))
@@ -70,15 +71,16 @@ projection2 <- function(X, X_tilde, chol_p, chol_nr,
 # for(i in 1:n){
 #   X_tilde_big[i, ((i-1)*r + 1):(i*r)] = X_tilde_1[i, ]
 # }
-# # res2 <- X_tilde_big %*% solve(crossprod(X_tilde_big) + diag(n*r)) %*% (crossprod(X_tilde_big, v_eta_1) + v_z_1)
+# res2 <- X_tilde_big %*% solve(crossprod(X_tilde_big) + diag(n*r)) %*% (crossprod(X_tilde_big, v_eta_1) + v_z_1)
 # H_big <- cbind(diag(n), X1, X_tilde_big)
-# res2 <- solve(crossprod(H_big) + diag(n+p+n*r)) %*% 
+# res2 <- solve(crossprod(H_big) + diag(n+p+n*r)) %*%
 #   (crossprod(H_big, v_eta_1) + c(v_xi_1, v_beta_1, v_z_1))
-# 
-# # P_tilde <- X_tilde_big %*% solve(crossprod(X_tilde_big) + diag(n*r)) %*% t(X_tilde_big)
-# # # (diag(P_tilde) - apply(X_tilde_1, 1, function(x){ sum(x^2)/(1 + sum(x^2)) }))
-# # S_d_star2 <- t(X1) %*% (diag(n) - P_tilde) %*% X1 + diag(p) - 
-# #   t(X1) %*% (diag(n) - P_tilde) %*% solve(diag(2, n) - P_tilde) %*% 
-# #   (diag(n) - P_tilde) %*% X1
+# summary(as.numeric(c(res2)) - res)
+
+# P_tilde <- X_tilde_big %*% solve(crossprod(X_tilde_big) + diag(n*r)) %*% t(X_tilde_big)
+# # (diag(P_tilde) - apply(X_tilde_1, 1, function(x){ sum(x^2)/(1 + sum(x^2)) }))
+# S_d_star2 <- t(X1) %*% (diag(n) - P_tilde) %*% X1 + diag(p) -
+#   t(X1) %*% (diag(n) - P_tilde) %*% solve(diag(2, n) - P_tilde) %*%
+#   (diag(n) - P_tilde) %*% X1
 
 

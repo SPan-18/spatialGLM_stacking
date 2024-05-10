@@ -12,10 +12,11 @@ col.RdBu <- colorRampPalette(c("blue", "white", "red"))
 pointref_plot=function(tab, colname, 
                 x_lim = c(0,1), y_lim = c(0,1), 
                 title = NULL,
+                h = 8,
                 legend_title = "z"){
   
   surf <- mba.surf(tab[,c("s1","s2",colname)], 
-                   no.X = 200, no.Y = 200, h = 8, m = 1, n = 1, 
+                   no.X = 200, no.Y = 200, h = h, m = 1, n = 1, 
                    extend=FALSE)$xyz.est
   
   surf_df <- data.frame(expand.grid(surf$x, surf$y), z = as.vector(surf$z))

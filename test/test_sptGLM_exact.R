@@ -2,14 +2,16 @@ rm(list = ls())
 
 source("../src/runsrc.R")
 
-simdat <- read.csv("../data/sim_count1000.csv")
+# simdat <- read.csv("../data/sim_count1000.csv")
+simdat <- read.csv("../data/sim_sptvcount100.3.csv")
 
 # Test on rows 1:100
-simdat <- simdat[1:100, ]
+# simdat <- simdat[1:100, ]
 y <- as.numeric(simdat$y)
 X <- as.matrix(simdat[, grep("x", names(simdat))])
 S <- as.matrix(simdat[, c("s1", "s2")])
-time <- rep(1, 100)
+# time <- rep(1, 100)
+time <- as.numeric(simdat$time)
 
 n_postsamp <- 500
 
@@ -32,6 +34,6 @@ simdat$postmedian_z <- apply(post_z[, 1:100], 2, median)
 # simdat$postmedian_z <- apply(resids, 1, median)
 
 leg_title <- TeX('$z(s)$')
-p1 <- pointref_plot(simdat, "z", legend_title = leg_title)
+p1 <- pointref_plot(simdat, "z1", legend_title = leg_title)
 p6 <- pointref_plot(simdat, "postmedian_z", legend_title = leg_title)
 gridExtra::grid.arrange(p1, p6, ncol = 2)

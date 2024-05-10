@@ -6,12 +6,12 @@ rmvn <- function(n, mu=0, V = matrix(1)){
   p <- length(mu)
   if(any(is.na(match(dim(V),p))))
     stop("Dimension problem!")
-  if(require(Rfast)){
-    D <- Rfast::cholesky(V, parallel = TRUE)
-  }else{
-    D <- chol(V)
-  }
-  # D <- chol(V)
+  # if(require(Rfast)){
+  #   D <- Rfast::cholesky(V, parallel = TRUE)
+  # }else{
+  #   D <- chol(V)
+  # }
+  D <- chol(V)
   t(matrix(rnorm(n*p), ncol=p) %*% D + rep(mu,rep(n,p)))
 }
 
@@ -177,3 +177,53 @@ sim_sptcount <- function(n, Nt, beta, phi, phi_t){
 #                        beta = c(5, -0.5),
 #                        phi = 3.5, phi_t = 0.5)
 # write.csv(simdat, "../data/sim_sptmpcount100.3.csv", row.names = FALSE)
+
+sim_sptvcount <- function(n, Nt, beta, phi_s, phi_t, sz){
+  
+  S <- vector(mode = "list", length = Nt)
+  for(i in 1:Nt){
+    S[[i]] <- data.frame(s1 = c(0,0,1,1,runif(n - 4, 0, 1)),
+                         s2 = c(0,1,0,1,runif(n - 4, 0, 1)))
+  }
+  S <- do.call("rbind", S)
+  
+  p <- length(beta)
+  
+  X <- cbind(rep(1, n*Nt), sapply(1:(p-1), function(x) rnorm(n*Nt)))
+  time <- rep(1:Nt, each = n)
+  D <- as.matrix(dist(S))
+  Dt <- as.matrix(dist(time))
+  V <- 1/(1 + phi_t*Dt) * exp(- (phi_s*D) / sqrt(1 + phi_t*Dt))
+  # z <- sapply(1:p, function(x){sz[x] * rmvn(1, rep(0, n*Nt), V)})
+  # mu <- array(dim = n*Nt)
+  # for(i in 1:length(mu)){
+  #   mu[i] <- sum(X[i, ] * (beta + z[i, ]))
+  # }
+  # mu <- as.numeric(X %*% beta) + Xz
+  L_z <- chol(V)
+  z <- rnorm(n = n*Nt*p, mean = 0, sd = 1)
+  for(j in 1:p){
+    ids <- (j-1)*n*Nt+1:(n*Nt)
+    z[ids] <- as.numeric(crossprod(L_z, z[ids]))
+    z[ids] <- sqrt(sz[j]) * z[ids]
+  }
+  G <- makeG(X)
+  mu <- (X %*% beta) + (G %*% z)
+  y <- array(dim = n*Nt)
+  for(i in 1:(n*Nt)){
+    y[i] <- rpois(1, exp(mu[i]))
+  }
+  zmat <- matrix(z, nrow = n*Nt, ncol = p, byrow = F)
+  dat <- cbind(S, time, X, y, zmat)
+  names(dat) = c("s1", "s2", "time", paste("x", 0:(p-1), sep = ""), "y", 
+                 paste("z", 1:p, sep = ""))
+  return(dat)
+}
+
+# set.seed(1729)
+# simdat <- sim_sptvcount(n = 1000, Nt = 3,
+#                         beta = c(5, -0.5),
+#                         phi_s = 3, phi_t = 0.5,
+#                         sz = c(0.25, 0.25))
+# write.csv(simdat, "../data/sim_sptvcount1000.3.csv", row.names = FALSE)
+
