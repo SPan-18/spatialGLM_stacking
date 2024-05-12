@@ -19,8 +19,12 @@ sptvGLM_exact <- function(y, X, X_tilde, S, time,
   
   t_start <- Sys.time()
   # evaluate correlation matrix of spatial-temporal process
-  distS <- as.matrix(dist(S))
-  distT <- as.matrix(dist(time))
+  # distS <- as.matrix(dist(S))
+  # distT <- as.matrix(dist(time))
+  distS <- dist(S)
+  distT <- dist(time)
+  distS <- dist2mat(distS, 128)
+  distT <- dist2mat(distT, 128)
   V_z <- 1/(1 + phi_t*distT) * exp(- (phi_s*distS) / sqrt(1 + phi_t*distT))
   L_z <- chol(V_z)
   

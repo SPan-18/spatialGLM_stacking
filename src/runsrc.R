@@ -19,6 +19,7 @@ library("ggplot2")
 library("MBA")
 library("latex2exp")
 library("knitr")
+library("Rcpp")
 
 # Source required scripts
 
@@ -38,3 +39,4 @@ source("../src/spDynGLM.R")
 source("../src/sptGLM.R")
 source("../src/projection2.R")
 source("../src/sptvGLM.R")
+sourceCpp("../src/dist2mat.cpp")
