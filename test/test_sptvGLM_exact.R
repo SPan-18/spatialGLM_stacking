@@ -17,15 +17,15 @@ n_postsamp <- 500
 
 params <- list(phi_s = 3, phi_t = 0.5,
                nu_xi = 1, nu_beta = 3, nu_z = 3,
-               alpha_epsilon = 0.5)
+               epsilon = 0.5)
 
-Rprof()
+# Rprof()
 mod_out <- sptvGLM_exact(y = y, X = X, X_tilde = X,
                          S = S, time = time,
                          N.samp = n_postsamp,
                          family = "poisson",
                          mod_params = params)
-Rprof(NULL)
+# Rprof(NULL)
 
 post_beta <- mod_out$beta
 post_z <- mod_out$z

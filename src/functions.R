@@ -188,3 +188,20 @@ GtGplusI <- function(X){
   diag(GtG) <- diag(GtG) + 1
   return(GtG)
 }
+
+# input a list of valid parameters and their candidate values
+# outputs a data frame with all candidate models based on input
+create_candidate_models <- function(model_list){
+  models <- expand.grid(model_list)
+  names(models) <- gsub("G_", "", names(models))
+  models_list <- apply(models, 1, function(x) as.vector(x, mode = "list"))
+  return(models_list)
+}
+
+# mod_list <- list(G_phi1 = c(2, 3),
+#                  G_phi2 = c(0.5, 1),
+#                  G_epsilon = c(0.5),
+#                  G_nuxi = c(1),
+#                  G_nubeta = c(3),
+#                  G_nuz = c(3))
+# create_candidate_models(mod_list)

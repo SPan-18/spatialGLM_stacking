@@ -227,3 +227,41 @@ sim_sptvcount <- function(n, Nt, beta, phi_s, phi_t, sz){
 #                         sz = c(0.25, 0.25))
 # write.csv(simdat, "../data/sim_sptvcount1000.3.csv", row.names = FALSE)
 
+sim_sptv_continuous <- function(n, beta, phi_s, phi_t, sz){
+  
+  S <- data.frame(s1 = c(0,0,1,1,runif(n - 4, 0, 1)),
+                  s2 = c(0,1,0,1,runif(n - 4, 0, 1)))
+  time <- runif(n)
+  p <- length(beta)
+  
+  X <- cbind(rep(1, n), sapply(1:(p-1), function(x) rnorm(n)))
+  D <- as.matrix(dist(S))
+  Dt <- as.matrix(dist(time))
+  
+  z <- rnorm(n = n*p, mean = 0, sd = 1)
+  for(i in 1:p){
+    V <- 1/(1 + phi_t[i]*Dt) * exp(- (phi_s[i]*D) / sqrt(1 + phi_t[i]*Dt))
+    L_z <- chol(V)
+    ids <- (i-1)*n+1:n
+    z[ids] <- as.numeric(crossprod(L_z, z[ids]))
+    z[ids] <- sqrt(sz[i]) * z[ids]
+  }
+  
+  G <- makeG(X)
+  mu <- (X %*% beta) + (G %*% z)
+  y <- array(dim = n)
+  for(i in 1:(n)){
+    y[i] <- rpois(1, exp(mu[i]))
+  }
+  zmat <- matrix(z, nrow = n, ncol = p, byrow = F)
+  dat <- cbind(S, time, X, y, zmat)
+  names(dat) = c("s1", "s2", "time", paste("x", 0:(p-1), sep = ""), "y", 
+                 paste("z", 1:p, sep = ""))
+  return(dat)
+}
+
+# set.seed(1729)
+# simdat <- sim_sptv_continuous(n = 1000, beta = c(5, -0.5),
+#                               phi_s = c(2, 4), phi_t = c(0.5, 1),
+#                               sz = c(0.25, 0.5))
+# write.csv(simdat, "../data/sim_sptv_1000.csv", row.names = FALSE)
