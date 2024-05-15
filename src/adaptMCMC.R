@@ -129,8 +129,8 @@
 #               nu = post_nu))
 # }
 
-library(spBayes)
-library(geoR)
+# library(spBayes)
+# library(geoR)
 
 spParams_adaMCMC <- function(z, theta_starting, distmat,
                              n.batch, batch.length, n.report,
@@ -259,7 +259,7 @@ spGCM_adaMetropGibbs <- function(y, X, S, family,
   XtXplusIchol <- chol(XtXplusI)
   
   n.batch <- 3
-  batch.length <- 10
+  batch.length <- 5
   
   pb <- progress_bar$new(format = "(:spin) [:bar] :percent [Elapsed time: :elapsedfull || Estimated time remaining: :eta]",
                          total = N.samp,

@@ -13,7 +13,8 @@ pointref_plot=function(tab, colname,
                 x_lim = c(0,1), y_lim = c(0,1), 
                 title = NULL,
                 h = 8,
-                legend_title = "z"){
+                legend_title = "z",
+                mark_points = FALSE){
   
   surf <- mba.surf(tab[,c("s1","s2",colname)], 
                    no.X = 200, no.Y = 200, h = h, m = 1, n = 1, 
@@ -51,6 +52,12 @@ pointref_plot=function(tab, colname,
   if(!is.null(title)){
     plot <- plot + labs(title = title)  +
       theme(plot.title = element_text(hjust = 0.5))
+  }
+  
+  if(mark_points){
+    plot <- plot + geom_point(aes(x = s1, y = s2), data = tab,
+                              color = "black", fill = NA, shape = 21,
+                              linewidth = 0.1, alpha = 0.75)
   }
   
   plot

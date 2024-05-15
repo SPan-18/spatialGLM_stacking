@@ -20,6 +20,7 @@ library("MBA")
 library("latex2exp")
 library("knitr")
 library("Rcpp")
+library("spBayes")
 
 # Source required scripts
 
@@ -29,7 +30,7 @@ source("../src/projection.R")
 source("../src/cholesky.R")
 source("../src/posterior.R")
 source("../src/predictive.R")
-# source("../src/sim_EFdata.R")
+source("../src/sim_EFdata.R")
 source("../src/stacking_weights.R")
 source("../src/cm_stacking.R")
 source("../src/pointrefplot.R")

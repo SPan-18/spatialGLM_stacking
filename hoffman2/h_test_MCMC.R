@@ -5,7 +5,7 @@ source("../src/runsrc.R")
 simdat <- read.csv("../data/sim_count1000.csv")
 
 # Test on rows 1:100
-simdat <- simdat[1:1000, ]
+simdat <- simdat[1:100, ]
 y <- as.numeric(simdat$y)
 X <- as.matrix(simdat[, grep("x", names(simdat))])
 S <- as.matrix(simdat[, c("s1", "s2")])
@@ -31,18 +31,18 @@ ids <- 1:n_postsamp
 # ids <- ids[c(rep(FALSE, 8), TRUE)]
 
 # 
-write.table(mod_out$beta[, ids],
-            file = "post_MCMC/beta.txt",
-            col.names = FALSE, row.names = FALSE)
-write.table(mod_out$z[, ids],
-            file = "post_MCMC/z.txt",
-            col.names = FALSE, row.names = FALSE)
-write.table(mod_out$xi[, ids],
-            file = "post_MCMC/xi.txt",
-            col.names = FALSE, row.names = FALSE)
-write.table(mod_out$phi[ids],
-            file = "post_MCMC/phi.txt",
-            col.names = FALSE, row.names = FALSE)
-write.table(mod_out$nu[ids],
-            file = "post_MCMC/nu.txt",
-            col.names = FALSE, row.names = FALSE)
+# write.table(mod_out$beta[, ids],
+#             file = "post_MCMC/beta.txt",
+#             col.names = FALSE, row.names = FALSE)
+# write.table(mod_out$z[, ids],
+#             file = "post_MCMC/z.txt",
+#             col.names = FALSE, row.names = FALSE)
+# write.table(mod_out$xi[, ids],
+#             file = "post_MCMC/xi.txt",
+#             col.names = FALSE, row.names = FALSE)
+# write.table(mod_out$phi[ids],
+#             file = "post_MCMC/phi.txt",
+#             col.names = FALSE, row.names = FALSE)
+# write.table(mod_out$nu[ids],
+#             file = "post_MCMC/nu.txt",
+#             col.names = FALSE, row.names = FALSE)
