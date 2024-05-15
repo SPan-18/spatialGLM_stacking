@@ -1,0 +1,229 @@
+---
+title: 'A quick guide to "spatialGLM_stacking"'
+subtitle: 'Bayesian inference for geostatistical count data using predictive stacking'
+author: "Soumyakanti Pan, e-mail: span18@ucla.edu"
+date: \today
+output: 
+  bookdown::html_document2:
+    toc: true
+    number_sections: true
+    df_print: kable
+    citation_package: natbib
+header-includes:
+  - \usepackage[utf8]{inputenc}
+  - \usepackage[T1]{fontenc}
+  - \usepackage{amsmath, amssymb, amsfonts, bm}
+  - \def\T{{ \top }}
+  - \newcommand{\iid}{\stackrel{\mathclap{\normalfont\tiny\mbox{iid}}}{\sim}}
+  - \newcommand{\given}{\mid}
+  - \newcommand{\biggiven}{\,\middle|\,}
+  - \newcommand{\E}{\mathbb{E}}
+  - \newcommand{\V}{\mathbb{V}}
+  - \newcommand{\defeq}{\vcentcolon=}
+  - \newcommand{\GP}{\mathrm{GP}}
+  - \newcommand{\EF}{\mathrm{EF}}
+  - \newcommand{\DY}{\mathrm{DY}}
+  - \newcommand{\CM}{\mathrm{CM}}
+  - \newcommand{\CMP}{\mathrm{CMP}}
+  - \newcommand{\GCM}{\mathrm{GCM}}
+  - \newcommand{\CMc}{\mathrm{CM_c}}
+  - \newcommand{\GCMc}{\mathrm{GCM_c}}
+  - \newcommand{\thetasp}{{\theta_{\text{sp}}}}
+  - \newcommand{\calD}{\mathcal{D}}
+  - \newcommand{\calL}{\mathcal{L}}
+  - \newcommand{\calS}{\mathcal{S}}
+  - \newcommand{\calT}{\mathcal{T}}
+bibliography: refs.bib
+link-citations: true
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, comment = NA,
+                      opts.label="kill_prefix", messages = FALSE,
+                      fig.align = 'center', fig.height = 3)
+```
+
+# Introduction
+This document is a guide to the code as it appears on the GitHub repository [spatialGLM_stacking](https://github.com/SPan-18/spatialGLM_stacking) that we have developed in order to implement Bayesian predictive stacking for analyzing outcomes that arrive as counts over spatial-temporal coordinates.
+
+## A brief summary 
+Analyzing non-Gaussian spatial-temporal data typically requires introducing spatial dependence in generalized linear models through the link function of an exponential family distribution. However, unlike in Gaussian likelihoods, inference is considerably encumbered by the inability to analytically integrate out the random effects and reduce the dimension of the parameter space. We propose exploiting generalized conjugate multivariate distribution theory [@bradley2023lgp] for exponential families, which enables exact sampling from analytically available posterior distributions conditional upon some fixed process parameters. Subsequently, we combine inference from these individual posterior distributions over a range of values of these parameters using Bayesian predictive stacking. The subsequent sections provide a brief summary on usage of the functions we developed to fit various spatial as well as spatial-temporal regressions on count data with fixed regression coefficients as well spatially-temporally varying regression coefficients.
+
+## Package requirements
+Successful run of the functions depends on installation of the following packages - `MASS`, `parallel`, `progress`, `dplyr`, `knitr`, `spBayes`, `CVXR` and `Rcpp`. Installation of `ggplot2`, `MBA`, `latex2exp` are required for reproducing graphical outputs. Installation of `Rfast`, `loo`, `Rmosek` and `geoR` are optional. The package `Rmosek` is an R interface for using the solver [MOSEK](https://docs.mosek.com/9.3/rmosek/index.html) which requires a license. One may obtain the license using academic email for free. Otherwise, one may use other solvers provided by `CVXR`, details of which will be provided in the respective sections.
+
+```{r packages, eval=FALSE}
+# Required package names
+packages <- c("MASS", "parallel", "progress", "dplyr", "knitr", "CVXR", "Rcpp",
+              "ggplot2", "MBA", "latex2exp", "Rfast", "loo", "Rmosek", "geoR", "spBayes")
+
+# Install packages not yet installed
+installed_packages <- packages %in% rownames(installed.packages())
+if (any(installed_packages == FALSE)) {
+  install.packages(packages[!installed_packages])
+}
+```
+
+## Load functions
+First, we include the required packages and loads all functions in the directory \texttt{./src}.
+```{r runsrc}
+# clear environment
+rm(list = ls())
+
+# load all functions
+source("../src/runsrc.R")
+```
+
+# Spatial regressions
+Let $y(s)$ be the outcome of interest at location $s \in \calD$ that is endowed with a probability law from the natural exponential family, which we denote by 
+\begin{equation}
+    y(s) \sim \EF(x(s)^\T \beta  + z(s); b, \psi_y)
+\end{equation}
+for some real parameter $b > 0$ and unit log partition function $\psi_y$. We consider the cases where response $y(s)$ follows a Poisson distribution or a binomial distribution. We generate synthetic data based on the model above where $z(s) \sim \GP(0, \sigma^2_z R(\cdot, \cdot; \phi, \nu))$ is a Gaussian process with Mat\'ern covariogram specified by spatial decay parameter $\phi$ and smoothness parameter $\nu$. 
+\[
+R(s, s'; \thetasp) = \frac{(\phi \lvert s - s' \rvert)^\nu}{2^{\nu - 1} \Gamma(\nu)} K_\nu (\phi \lvert s - s' \rvert))
+\]
+For generating synthetic data, we consider $x(s)$ to be $p$-dimensional containing an intercept and other variables sampled independently from a standard normal distribution.
+
+## Spatial Poisson regression
+### Simulation of synthetic data
+We generate the synthetic spatial Poisson count data with sample size $n = 100$ and locations sampled uniformly from the unit square, $[0, 1]^2$ and, $\sigma^2_z = 0.4$, $\beta = (5, -0.5)$ and, spatial process parameters $\phi = 3.5$ and $\nu = 0.5$ (exponential covariogram) using the function `sim_count`.
+```{r sim1, cache=TRUE, cache.path="cache/"}
+set.seed(1729)
+simdat <- sim_count(n = 100, beta = c(5, -0.5), phi = 3.5)
+
+suppressPackageStartupMessages(library(kableExtra))
+kable(head(simdat), "html") %>%
+  kable_styling(full_width = F)
+```
+```{r, fig.cap="Point-referenced count data."}
+# Plot point-referenced counts
+ggplot(simdat, aes(x = s1, y = s2)) +
+  geom_point(aes(color = y, alpha = 0.9)) +
+  scale_color_distiller(palette = "RdYlGn", direction = -1,
+                        label = function(x) sprintf("%.0f", x)) +
+  guides(alpha = 'none') + xlab("Easting") + ylab("Northing") +
+  labs(color = TeX('$y(s)$')) + theme_bw() +
+  theme(axis.ticks = element_line(linewidth = 0.25),
+        panel.background = element_blank(),
+        panel.grid = element_blank(), 
+        legend.title = element_text(size = 10, hjust = 0.25), 
+        legend.box.just = "center", aspect.ratio = 1)
+```
+
+### Fitting Poisson regression using stacking
+We first store our data into the variables `y`, `X` and `S` which corresponds to the $n \times 1$ response vector $y$, the $n \times p$ design matrix $X$ and the $n \times 2$ matrix storing the locations of each response.
+```{r}
+y <- as.numeric(simdat$y)
+X <- as.matrix(simdat[, grep("x", names(simdat))])
+S <- as.matrix(simdat[, c("s1", "s2")])
+```
+
+Next, we build the collection of candidate models using the function `create_model_list()` based on the spatial decay and smoothness parameters and some auxiliary model parameters that includes a boundary adjustment parameter, candidate values of which are given in the argument `G_epsilon` and the variance parameter of the fine-scale variation, candidate values of which are given by `G_nuxi`. The inputs `G_nubeta` and `G_nuz` corresponds to fixed hyperparameters of the scale parameters of the regression coefficient and the spatial process respectively. The candidate values of the decay parameter $\phi$ are chosen in a way that it covers 20\%, 50\% and 70\% of the maximum inter-site distance. The candidate values the spatial smoothness parameter are chosen to be customary values common in spatial analysis. User may attempt to minimize the total number of models (say, $L$) by choosing less number of informative candidate values of the parameters and hence drastically lowering the number of candidate models $\{M_1, \dots, M_L\}$ being fit, thus improving runtime.
+```{r}
+mod_list <- create_model_list(G_decay = c(3, 4, 10), 
+                              G_smoothness = c(0.5, 1, 1.5),
+                              G_epsilon = c(0.5, 0.75),
+                              G_nuxi = c(1),
+                              G_nubeta = 3, G_nuz = 3)
+```
+
+Now, we choose how many posterior samples we want to obtain and implement our proposed stacking algorithm using the function `spGLM_stack()`. The option `MC.samp` controls how many Monte Carlo samples we consider to find the leave-one-out predictive densities (LOO-PD), whereas the option `CV_fold` controls the value of $K$ in order to carry out a $K$-fold cross-validation approach for fast evaluation of LOO-PD. If we set `mc.cores = NULL`, then the algorithm is not parallelised over multiple cores, whereas the user may choose this value based on the computational resource of their machine. If the user does not have a MOSEK license, then `solver = "ECOS"` may be used.
+```{r stack1, cache=TRUE, cache.path="cache/"}
+n_postsamp <- 500
+m_out <- spGLM_stack(y = y, X = X, S = S, 
+                     N.samp = n_postsamp, MC.samp = 200,
+                     family = "poisson", spCov = "matern",
+                     CV_fold = 10, mc.cores = 6, 
+                     solver = "MOSEK",
+                     mod_params_list = mod_list)
+```
+
+Now, we look closely at the output `m_out` to understand how to use the stacking weights and posterior samples corresponding to each model. The output `m_out` is a 2-dimensional list with the first list named \texttt{models} and the second \texttt{weights}.
+```{r}
+str(m_out, max.level = 1)
+```
+
+The second list \texttt{weights} stores a $L$-dimensional vector of the stacking weights corresponding to each of the $L$ models. The first list \texttt{models} is itself a $L$-dimensional list with each list storing a $4$-dimensional list containing posterior samples of relevant model parameters and LOO-PD.
+```{r}
+str(m_out$models[[1]])
+```
+
+Given the stacking weights, one can sample from the $L$ models accordingly and obtain Bayesian inference on the regression coefficients, $\beta$ and the spatial random effect, $z$ by using the function `postrunsampler()`.
+```{r}
+postrun_samps <- postrunsampler(m_out, N.samp = n_postsamp)
+post_z <- postrun_samps$z
+post_beta <- postrun_samps$beta
+```
+
+We can now obtain inference on the regression coefficients from the following summary.
+```{r}
+print(ci_beta(t(post_beta)))
+```
+
+### Fitting Poisson regression using MCMC
+We devise an adaptive Metropolis-within-Gibbs algorithm [@adaMetropGibbs_2009] to sample from the joint posterior distribution of the model parameters and the spatial process parameters $\phi$ and $\nu$ by using the function `spGCM_adaMetropGibbs()`.
+```{r mcmc1, cache=TRUE, cache.path="cache/"}
+n_postsamp <- 10000
+
+mod_out <- spGCM_adaMetropGibbs(y = y, X = X, S = S, family = "poisson",
+                                N.samp = n_postsamp, spCov = "matern",
+                                starting = list(phi = 3, nu = 1,
+                                                beta = c(0, 0)),
+                                prior = list(phi = c(0.5, 10),
+                                             nu = c(0.1, 2),
+                                             nu_xi = 1,
+                                             nu_beta = 2.1,
+                                             nu_z = 2.1,
+                                             alpha_epsilon = 0.5))
+```
+
+Next, we collect the posterior samples after removing burn-in samples and thinning to reduce autocorrelation in the chain.
+```{r}
+burnin_pc <- 0.5          # percentage burn-in
+n_thin <- 5               # consider every *-th sample
+
+ids <- 1:n_postsamp
+ids <- ids[-(1:(floor(burnin_pc * n_postsamp))+1)]
+ids <- ids[c(rep(FALSE, n_thin - 1), TRUE)]
+
+post_beta_mcmc <- mod_out$beta[, ids]
+post_z_mcmc <- mod_out$z[, ids]
+post_phi_mcmc <- mod_out$phi[ids]
+post_nu_mcmc <- mod_out$nu[ids]
+```
+
+Posterior distributions of the spatial process parameters can be analysed by histograms.
+```{r, fig.cap = "Posterior distributions of spatial process parameters."}
+post_spParams <- data.frame(vals = c(post_phi_mcmc, post_nu_mcmc), 
+                            params = rep(c("phi", "nu"), each = length(post_phi_mcmc)))
+spParams_names <- c('phi' = TeX('$\\phi$'), 'nu' = TeX('$\\nu$'))
+spParams_labeller <- as_labeller(spParams_names, default = label_parsed)
+ggplot(post_spParams, aes(x = vals)) + 
+  geom_histogram(aes(y = after_stat(density)), bins = 50,
+                 color = "black", fill = "royalblue4", alpha = 0.75) + 
+  xlab("") + ylab("Posterior density") +
+  facet_wrap(~ params, labeller = spParams_labeller, scales = "free") +
+  theme_bw() + theme(panel.grid = element_blank())
+```
+
+### Comparison of inference by stacking versus MCMC
+
+```{r, fig.cap="Interpolated surfaces of (a) true spatial effects, posterior median of spatial effects obtained by (b) MCMC, and (c) stacking."}
+simdat$postmedian_z_mcmc <- apply(post_z_mcmc, 1, median)
+simdat$postmedian_z_stack <- apply(post_z, 1, median)
+
+p1 <- pointref_plot(simdat, "z", legend_title = NULL, mark_points = TRUE)
+p2 <- pointref_plot(simdat, "postmedian_z_mcmc", legend_title = NULL)
+p3 <- pointref_plot(simdat, "postmedian_z_stack", legend_title = NULL)
+
+library(ggpubr)
+ggarrange(p1, p2, p3, nrow = 1, labels = 'auto',
+          common.legend = TRUE, legend="right")
+```
+
+
+# References
+
+---
+nocite: '@*'
+---
