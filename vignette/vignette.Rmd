@@ -5,6 +5,8 @@ author: "Soumyakanti Pan, e-mail: span18@ucla.edu"
 date: \today
 output: 
   bookdown::html_document2:
+    theme: spacelab
+    highlight: pygments
     toc: true
     number_sections: true
     df_print: kable

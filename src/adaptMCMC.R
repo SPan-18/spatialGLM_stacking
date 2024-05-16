@@ -328,3 +328,5 @@ spGCM_adaMetropGibbs <- function(y, X, S, family,
               nu = post_nu))
 }
 
+
+
