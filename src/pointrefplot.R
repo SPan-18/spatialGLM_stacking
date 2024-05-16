@@ -57,7 +57,7 @@ pointref_plot=function(tab, colname,
   if(mark_points){
     plot <- plot + geom_point(aes(x = s1, y = s2), data = tab,
                               color = "black", fill = NA, shape = 21,
-                              linewidth = 0.1, alpha = 0.75)
+                              stroke = 0.5, alpha = 0.5)
   }
   
   plot

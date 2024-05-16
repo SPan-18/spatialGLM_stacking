@@ -259,7 +259,7 @@ spGCM_adaMetropGibbs <- function(y, X, S, family,
   XtXplusIchol <- chol(XtXplusI)
   
   n.batch <- 3
-  batch.length <- 5
+  batch.length <- 10
   
   pb <- progress_bar$new(format = "(:spin) [:bar] :percent [Elapsed time: :elapsedfull || Estimated time remaining: :eta]",
                          total = N.samp,
