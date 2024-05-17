@@ -39,6 +39,18 @@ header-includes:
 bibliography: refs.bib
 link-citations: true
 ---
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: { 
+      equationNumbers: { 
+            autoNumber: "AMS",
+            formatNumber: function (n) {return n}
+      } 
+  }
+});
+</script>
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, comment = NA,
                       opts.label="kill_prefix", messages = FALSE,
@@ -78,19 +90,19 @@ source("../src/runsrc.R")
 
 # Spatial regressions
 Let $y(s)$ be the outcome of interest at location $s \in \calD$ that is endowed with a probability law from the natural exponential family, which we denote by 
-\begin{equation}
+\begin{equation}\label{eq:NEF_model}
     y(s) \sim \EF(x(s)^\T \beta  + z(s); b, \psi_y)
 \end{equation}
 for some real parameter $b > 0$ and unit log partition function $\psi_y$. We consider the cases where response $y(s)$ follows a Poisson distribution or a binomial distribution. We generate synthetic data based on the model above where $z(s) \sim \GP(0, \sigma^2_z R(\cdot, \cdot; \phi, \nu))$ is a Gaussian process with Matern covariogram specified by spatial decay parameter $\phi$ and smoothness parameter $\nu$. 
-\[
+\begin{equation}\label{eq:matern}
 R(s, s'; \thetasp) = \frac{(\phi \lvert s - s' \rvert)^\nu}{2^{\nu - 1} \Gamma(\nu)} K_\nu (\phi \lvert s - s' \rvert))
-\]
+\end{equation}
 For generating synthetic data, we consider $x(s)$ to be $p$-dimensional containing an intercept and other variables sampled independently from a standard normal distribution.
 
 ## Spatial Poisson regression
 ### Simulation of synthetic data
-We generate the synthetic spatial Poisson count data with sample size $n = 100$ and locations sampled uniformly from $[0, 1]^2$, the unit square and, $\sigma^2_z = 0.4$, $\beta = (5, -0.5)$ and, spatial process parameters $\phi = 3.5$ and $\nu = 0.5$ (exponential covariogram)
-\begin{equation}
+We generate the synthetic spatial Poisson count data following model \\eqref{eq:NEF_model} with sample size $n = 100$ and locations sampled uniformly from $[0, 1]^2$, the unit square and, $\sigma^2_z = 0.4$, $\beta = (5, -0.5)$ and, latent Gaussian process with correlation function \\eqref{eq:matern} with $\phi = 3.5$ and $\nu = 0.5$ (exponential covariogram)
+\begin{equation}\label{eq: sim1}
 \begin{split}
 y(s_i) &\sim \mathrm{Poisson}(\lambda(s_i)), \quad i = 1, \dots, 100.\\
 \lambda(s_i) & = \exp(x(s_i)^\T \beta + z(s_i))
@@ -395,7 +407,7 @@ kable(ci_beta(t(post_beta)), "html") %>%
   kable_styling(full_width = F)
 ```
 
-```{r, fig.cap='Interpolated surface of (a) true spatial effects and (b) posterior median of spatial effects obtained by stacking'}
+```{r, eval = FALSE, echo = FALSE, fig.cap='Interpolated surface of (a) true spatial effects and (b) posterior median of spatial effects obtained by stacking'}
 simdat2$postmedian_z <- apply(post_z, 1, median)
 leg_title <- TeX('$z(s)$')
 pbinom_z1 <- pointref_plot(simdat2, "z", legend_title = leg_title, mark_points = TRUE)
@@ -403,7 +415,6 @@ pbinom_z2 <- pointref_plot(simdat2, "postmedian_z", legend_title = leg_title)
 ggarrange(pbinom_z1, pbinom_z2, nrow = 1, labels = 'auto',
           common.legend = TRUE, legend="right")
 ```
-
 
 
 # References
