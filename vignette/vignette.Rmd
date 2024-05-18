@@ -69,7 +69,7 @@ Successful run of the functions depends on installation of the following package
 ```{r packages, eval=FALSE}
 # Required package names
 packages <- c("MASS", "parallel", "progress", "dplyr", "knitr", "CVXR", "Rcpp",
-              "ggplot2", "ggpubr", "MBA", "latex2exp", 
+              "ggplot2", "ggpubr", "MBA", "latex2exp",
               "Rfast", "loo", "Rmosek", "geoR", "spBayes")
 
 # Install packages not yet installed
@@ -116,9 +116,7 @@ set.seed(1729)
 beta0 <- c(5, -0.5)
 simdat <- sim_count(n = 100, beta = beta0, phi = 3.5)
 
-suppressPackageStartupMessages(library(kableExtra))
-kable(head(simdat), "html") %>%
-  kable_styling(full_width = F)
+print(head(simdat))
 ```
 ```{r, fig.cap="Simulated point-referenced Poisson count data."}
 # Plot point-referenced counts
@@ -403,9 +401,7 @@ post_z <- postrun_samps$z
 post_beta <- postrun_samps$beta
 
 # Print credible intervals of fixed effects
-suppressPackageStartupMessages(library(kableExtra))
-kable(ci_beta(t(post_beta)), "html") %>%
-  kable_styling(full_width = F)
+print(ci_beta(t(post_beta)))
 ```
 
 ```{r, eval = FALSE, echo = FALSE, fig.cap='Interpolated surface of (a) true spatial effects and (b) posterior median of spatial effects obtained by stacking'}

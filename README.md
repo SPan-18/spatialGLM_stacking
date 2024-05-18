@@ -25,11 +25,16 @@ git clone https://github.com/SPan-18/spatialGLM_stacking.git
 ```
 on your personal computer or, remote server to clone this repository.
 
-The following instructions will assume installation and use of the R statistical environment and installation of some standard packages. Details on the required packages are given in the document `vignette/vignette.html`. To run the example code in `vignette.Rmd`, install the `rmarkdown` and the `bookdown` package and run the following commands. 
+The following instructions will assume installation and use of the R statistical environment and installation of some standard packages. Details on the required packages are given in the document `vignette/vignette.html`. Install them along with the packages `rmarkdown` and `bookdown`. To run the example code in `vignette.Rmd`, run the following commands. 
 ```bash
 cd PATH-TO-CLONED-RESPOSITORY
 cd vignette
 make
+```
+If you are running on a server, you may need to load some necessary modulefiles before running \texttt{make}. For example, if you are working on UCLA's Hoffman2 Cluster, then run the following first.
+```bash
+module load R/4.2.1
+module load pandoc/
 ```
 The Makefile runs the vignette.Rmd based on cached output. For a fresh run (which may take a very long time!) of the Rmd file, the user is required to toggle the cache options suitably in the respective code chunk headers.
 
