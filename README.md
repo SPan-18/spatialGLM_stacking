@@ -25,7 +25,7 @@ git clone https://github.com/SPan-18/spatialGLM_stacking.git
 ```
 on your personal computer or, remote server to clone this repository.
 
-The following instructions will assume installation and use of the R statistical environment and installation of some standard packages. Details on the required packages are given in the document `vignette/vignette.html`. To run the example code in `vignette.Rmd`, install the `rmarkdown` package and run the following commands. 
+The following instructions will assume installation and use of the R statistical environment and installation of some standard packages. Details on the required packages are given in the document `vignette/vignette.html`. To run the example code in `vignette.Rmd`, install the `rmarkdown` and the `bookdown` package and run the following commands. 
 ```bash
 cd PATH-TO-CLONED-RESPOSITORY
 cd vignette

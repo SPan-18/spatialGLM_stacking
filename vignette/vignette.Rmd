@@ -69,7 +69,8 @@ Successful run of the functions depends on installation of the following package
 ```{r packages, eval=FALSE}
 # Required package names
 packages <- c("MASS", "parallel", "progress", "dplyr", "knitr", "CVXR", "Rcpp",
-              "ggplot2", "MBA", "latex2exp", "Rfast", "loo", "Rmosek", "geoR", "spBayes")
+              "ggplot2", "ggpubr", "MBA", "latex2exp", 
+              "Rfast", "loo", "Rmosek", "geoR", "spBayes")
 
 # Install packages not yet installed
 installed_packages <- packages %in% rownames(installed.packages())
