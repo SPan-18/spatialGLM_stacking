@@ -54,15 +54,15 @@ Rscript test_stack_poisson.R
 .
 ├── ... (license, README, etc.)
 ├── data
-│   ├── ... (contains different datasets)
+│   └── ... (contains different datasets)
 ├── hoffman2
-│   ├── ... (scripts to run on cluster)
+│   └── ... (scripts to run on cluster)
 ├── plots
 │   └── ... (contains useful plots)
 ├── src
-│   ├── ... (contains all necessary functions)
+│   └── ... (contains all necessary functions)
 ├── test
-│   ├── ... (sourceable R scripts)
+│   └── ... (sourceable R scripts)
 └── vignette
     ├── Makefile
     ├── cache
