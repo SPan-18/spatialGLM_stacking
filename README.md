@@ -66,7 +66,7 @@ Rscript test_stack_poisson.R
 └── vignette
     ├── Makefile
     ├── cache
-    │   ├── ... (Rmd outputs cache)
+    │   └── ... (Rmd outputs cache)
     ├── refs.bib
     ├── vignette.Rmd
     └── vignette.html
