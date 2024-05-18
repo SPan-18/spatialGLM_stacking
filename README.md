@@ -33,7 +33,7 @@ make
 ```
 If you intend to run on a server, you may need to load some necessary module files before issuing *make*. For example, if you are working on UCLA's Hoffman2 Cluster, then run the following first.
 ```bash
-module load R/4.2.1
+module load R/4.2.2
 module load pandoc/2.17.1.1
 module load gcc/11.3.0
 ```
