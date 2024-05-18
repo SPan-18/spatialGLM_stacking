@@ -31,11 +31,14 @@ cd PATH-TO-CLONED-RESPOSITORY
 cd vignette
 make
 ```
-If you are running on a server, you may need to load some necessary modulefiles before running \texttt{make}. For example, if you are working on UCLA's Hoffman2 Cluster, then run the following first.
+If you intend to run on a server, you may need to load some necessary module files before issuing \texttt{make}. For example, if you are working on UCLA's Hoffman2 Cluster, then run the following first.
 ```bash
 module load R/4.2.1
-module load pandoc/
+module load pandoc/2.17.1.1
+module load gcc/11.3.0
 ```
+If you are installing the package `ggpubr` on Hoffman2, then you may also need to include the module files \texttt{cmake/3.19.5} and \texttt{nlopt/2.7.1}.
+
 The Makefile runs the vignette.Rmd based on cached output. For a fresh run (which may take a very long time!) of the Rmd file, the user is required to toggle the cache options suitably in the respective code chunk headers.
 
 The directory `data` contains synthetic datasets used in different simulation experiments as well as a dataset on migrant bird sightings from the [North American Breeding Bird Survey](https://www.usgs.gov/data/2022-release-north-american-breeding-bird-survey-dataset-1966-2021) (2010-19). The directory `src` contains all R functions required to implement our algorithm. The directory `test` contains executable `.R` scripts, which the user needs to source to run them. For example, to run the script \texttt{test_stack_poisson.R}, on Mac, run the following in terminal, or "source" the script from RStudio.
