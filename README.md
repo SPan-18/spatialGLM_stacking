@@ -1,5 +1,6 @@
-[![CC0 1.0 Universal][license-shield]][license-url]
-[![LinkedIn][linkedin-shield]][linkedin-url]
+<a name="readme-top"></a>
+[![CC0 1.0 Universal][license-shield]][https://opensource.org/licenses/BSD-3-Clause]
+[![LinkedIn][linkedin-shield]][https://www.linkedin.com/in/soumyakanti-pan-9b660b145/]
 
 # spatialGLM_stacking: Predictive Stacking in Bayesian Hierarchical Models for Dependent Data from the Natural Exponential Family
 
