@@ -7,7 +7,7 @@
 
 # spatialGLM_stacking: Bayesian Inference For Geostatistical Count Data Using Predictive Stacking
 
-This repository contains code to implement different analyses, as it appears on the manuscript "Bayesian Inference for spatial-temporal count data using predictive stacking".
+This repository contains code to implement different analyses, as it appears in the manuscript "Bayesian Inference for spatial-temporal count data using predictive stacking".
 
 Implemented models include Bayesian spatial and spatial-temporal (discrete as well as continuous time domains) regressions on Poisson and binomial point-referenced count data with application to modeling avian counts recorded in the [North American Breeding Bird Survey](https://www.usgs.gov/data/2022-release-north-american-breeding-bird-survey-dataset-1966-2021).
 
@@ -25,15 +25,15 @@ git clone https://github.com/SPan-18/spatialGLM_stacking.git
 ```
 on your personal computer or, remote server to clone this repository.
 
-The following instructions will assume installation and use of the R statistical environment and installation of some standard packages. Details on the required packages are given in the document `vignette/vignette.html`. To run the example code, install the `rmarkdown` package and run the following commands. 
+The following instructions will assume installation and use of the R statistical environment and installation of some standard packages. Details on the required packages are given in the document `vignette/vignette.html`. To run the example code in `vignette.Rmd`, install the `rmarkdown` package and run the following commands. 
 ```bash
 cd PATH-TO-CLONED-RESPOSITORY
 cd vignette
 make
 ```
-The Makefile runs the vignette.Rmd based on cached output. For a fresh run (which may take a very long time!) of the Rmd file, user have to remove the cache options from the code chunk headers.
+The Makefile runs the vignette.Rmd based on cached output. For a fresh run (which may take a very long time!) of the Rmd file, the user is required to toggle the cache options suitably in the respective code chunk headers.
 
-The directory `data` contains synthetic datasets used in different simulation experiments as well as a dataset on avian counts from [North American Breeding Bird Survey](https://www.usgs.gov/data/2022-release-north-american-breeding-bird-survey-dataset-1966-2021) (2010-19). The directory `src` contains all R functions required to implement our algorithm. The directory `test` contains executable `.R` scripts - just source to run them. For example, on Mac, run the following or "source" the script from RStudio.
+The directory `data` contains synthetic datasets used in different simulation experiments as well as a dataset on migrant bird sightings from the [North American Breeding Bird Survey](https://www.usgs.gov/data/2022-release-north-american-breeding-bird-survey-dataset-1966-2021) (2010-19). The directory `src` contains all R functions required to implement our algorithm. The directory `test` contains executable `.R` scripts, which the user needs to source to run them. For example, to run the script \texttt{test_stack_poisson.R}, on Mac, run the following in terminal, or "source" the script from RStudio.
 ```bash
 cd PATH-TO-CLONED-RESPOSITORY
 cd test
