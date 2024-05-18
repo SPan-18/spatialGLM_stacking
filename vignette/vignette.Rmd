@@ -417,8 +417,12 @@ ggarrange(pbinom_z1, pbinom_z2, nrow = 1, labels = 'auto',
 ```
 
 
-# References
+# References {-}
 
----
-nocite: '@*'
----
+<div id="refs"></div>
+
+### Session information {-}
+
+```{r}
+sessionInfo()
+```
