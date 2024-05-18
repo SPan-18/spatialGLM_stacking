@@ -1,54 +1,80 @@
-<!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
 <a name="readme-top"></a>
-<!--
-*** Thanks for checking out the Best-README-Template. If you have a suggestion
-*** that would make this better, please fork the repo and create a pull request
-*** or simply open an issue with the tag "enhancement".
-*** Don't forget to give the project a star!
-*** Thanks again! Now go create something AMAZING! :D
--->
 
-
-
-<!-- PROJECT SHIELDS -->
-<!--
-*** I'm using markdown "reference style" links for readability.
-*** Reference links are enclosed in brackets [ ] instead of parentheses ( ).
-*** See the bottom of this document for the declaration of the reference variables
-*** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
-*** https://www.markdownguide.org/basic-syntax/#reference-style-links
--->
 [![Contributors][contributors-shield]][contributors-url]
 [![Forks][forks-shield]][forks-url]
-[![Stargazers][stars-shield]][stars-url]
-[![Issues][issues-shield]][issues-url]
-[![MIT License][license-shield]][license-url]
+[![CC0-1.0 License][license-shield]][license-url]
 [![LinkedIn][linkedin-shield]][linkedin-url]
 
+# spatialGLM_stacking: Bayesian Inference For Geostatistical Count Data Using Predictive Stacking
 
+This repository contains code to implement different analyses, as it appears on the manuscript "Bayesian Inference for spatial-temporal count data using predictive stacking".
 
-<!-- PROJECT LOGO -->
-<br />
-<div align="center">
-  <a href="https://github.com/SPan-18/spatialGLM_stacking">
-    <img src="images/logo.png" alt="Logo" width="80" height="80">
-  </a>
+Implemented models include Bayesian spatial and spatial-temporal (discrete as well as continuous time domains) regressions on Poisson and binomial point-referenced count data with application to modeling avian counts recorded in the [North American Breeding Bird Survey](https://www.usgs.gov/data/2022-release-north-american-breeding-bird-survey-dataset-1966-2021).
 
-<h3 align="center">project_title</h3>
+## Authors
 
-  <p align="center">
-    project_description
-    <br />
-    <a href="https://github.com/SPan-18/spatialGLM_stacking"><strong>Explore the docs »</strong></a>
-    <br />
-    <br />
-    <a href="https://github.com/SPan-18/spatialGLM_stacking">View Demo</a>
-    ·
-    <a href="https://github.com/SPan-18/spatialGLM_stacking/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
-    ·
-    <a href="https://github.com/SPan-18/spatialGLM_stacking/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
-  </p>
-</div>
+| Name   | Email       |              |
+|:------ |:----------- | :----------- |
+| Soumyakanti Pan | span18@ucla.edu | PhD student, UCLA Biostatistics |
 
+## Instructions
 
-We develop Bayesian predictive stacking for geostatistical models involving non-Gaussian responses. We carefully build upon the distribution theory proposed by Bradley et. al. (2023) which assumes the data to be distributed as some member of the exponential family and provides a straightforward strategy to sample exactly from the posterior distribution of the latent processes and the model parameters conditional on certain hyperparameters (including spatial process parameters) hence overcoming the computational burden of traditional Markov Chain Monte Carlo (MCMC) algorithms. Following the above strategy, the posterior samples are often found to be sensitive towards the choice of these hyperparameters which often remains elusive in addition to being weakly identifiable. Under this setting, stacking of predictive densities, as a model averaging procedure can prove to be effective as we combine the inference by stacking these individual models on a grid of model hyperparameters. 
+To reproduce results or to try out the example code, issue
+```bash
+git clone https://github.com/SPan-18/spatialGLM_stacking.git
+```
+on your personal computer or, remote server to clone this repository.
+
+The following instructions will assume installation and use of the R statistical environment and installation of some standard packages. Details on the required packages are given in the document `vignette/vignette.html`. To run the example code, install the `rmarkdown` package and run the following commands. 
+```bash
+cd PATH-TO-CLONED-RESPOSITORY
+cd vignette
+make
+```
+The Makefile runs the vignette.Rmd based on cached output. For a fresh run (which may take a very long time!) of the Rmd file, user have to remove the cache options from the code chunk headers.
+
+The directory `data` contains synthetic datasets used in different simulation experiments as well as a dataset on avian counts from [North American Breeding Bird Survey](https://www.usgs.gov/data/2022-release-north-american-breeding-bird-survey-dataset-1966-2021) (2010-19). The directory `src` contains all R functions required to implement our algorithm. The directory `test` contains executable `.R` scripts - just source to run them. For example, on Mac, run the following or "source" the script from RStudio.
+```bash
+cd PATH-TO-CLONED-RESPOSITORY
+cd test
+Rscript test_stack_poisson.R
+```
+
+### Directory structure
+
+```bash
+.
+├── ... (license, README, etc.)
+├── data
+│   ├── ... (contains different datasets)
+├── hoffman2
+│   ├── ... (scripts to run on cluster)
+├── plots
+│   └── ... (contains useful plots)
+├── src
+│   ├── ... (contains all necessary functions)
+├── test
+│   ├── ... (sourceable R scripts)
+└── vignette
+    ├── Makefile
+    ├── cache
+    │   ├── ... (Rmd outputs cache)
+    ├── refs.bib
+    ├── vignette.Rmd
+    └── vignette.html
+
+```
+
+Licensing
+---------
+* Code &copy; 2024, Soumyakanti Pan, licensed under [CC0 1.0 Universal](http://creativecommons.org/ns#).
+
+<!-- MARKDOWN LINKS & IMAGES -->
+[contributors-shield]: https://img.shields.io/github/contributors/SPan-18/spatialGLM_stacking.svg?style=for-the-badge
+[contributors-url]: https://github.com/SPan-18/spatialGLM_stacking/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/SPan-18/spatialGLM_stacking.svg?style=for-the-badge
+[forks-url]: https://github.com/SPan-18/spatialGLM_stacking/network/members
+[license-shield]: https://img.shields.io/github/license/SPan-18/spatialGLM_stacking.svg?style=for-the-badge
+[license-url]: https://github.com/SPan-18/spatialGLM_stacking/blob/master/LICENSE
+[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
+[linkedin-url]: https://www.linkedin.com/in/soumyakanti-pan-9b660b145/
