@@ -588,16 +588,6 @@ display: none;
 </ul>
 </div>
 
-<script type="text/x-mathjax-config">
-MathJax.Hub.Config({
-  TeX: { 
-      equationNumbers: { 
-            autoNumber: "AMS",
-            formatNumber: function (n) {return n}
-      } 
-  }
-});
-</script>
 <div id="introduction" class="section level1" number="1">
 <h1><span class="header-section-number">1</span> Introduction</h1>
 <p>This document is a guide to the code as it appears on the GitHub repository <a href="https://github.com/SPan-18/spatialGLM_stacking">spatialGLM_stacking</a> that we have developed in order to implement Bayesian predictive stacking for analyzing outcomes that arrive as counts over spatial-temporal coordinates.</p>
@@ -634,24 +624,27 @@ MathJax.Hub.Config({
 <div id="spatial-regressions" class="section level1" number="2">
 <h1><span class="header-section-number">2</span> Spatial regressions</h1>
 <p>Let <span class="math inline">\(y(s)\)</span> be the outcome of interest at location <span class="math inline">\(s \in \mathcal{D}\)</span> that is endowed with a probability law from the natural exponential family, which we denote by
-<span class="math display">\[\begin{equation}\label{eq:NEF_model}
+<span class="math display" id="eq:NEF">\[\begin{equation}
     y(s) \sim \mathrm{EF}(x(s)^{ \top }\beta  + z(s); b, \psi_y)
+    \tag{2.1}
 \end{equation}\]</span>
 for some real parameter <span class="math inline">\(b &gt; 0\)</span> and unit log partition function <span class="math inline">\(\psi_y\)</span>. We consider the cases where response <span class="math inline">\(y(s)\)</span> follows a Poisson distribution or a binomial distribution. We generate synthetic data based on the model above where <span class="math inline">\(z(s) \sim \mathrm{GP}(0, \sigma^2_z R(\cdot, \cdot; \phi, \nu))\)</span> is a Gaussian process with Matern covariogram specified by spatial decay parameter <span class="math inline">\(\phi\)</span> and smoothness parameter <span class="math inline">\(\nu\)</span>.
-<span class="math display">\[\begin{equation}\label{eq:matern}
+<span class="math display" id="eq:matern">\[\begin{equation}
 R(s, s&#39;; {\theta_{\text{sp}}}) = \frac{(\phi \lvert s - s&#39; \rvert)^\nu}{2^{\nu - 1} \Gamma(\nu)} K_\nu (\phi \lvert s - s&#39; \rvert))
+\tag{2.2}
 \end{equation}\]</span>
 For generating synthetic data, we consider <span class="math inline">\(x(s)\)</span> to be <span class="math inline">\(p\)</span>-dimensional containing an intercept and other variables sampled independently from a standard normal distribution.</p>
 <div id="spatial-poisson-regression" class="section level2" number="2.1">
 <h2><span class="header-section-number">2.1</span> Spatial Poisson regression</h2>
 <div id="simulation-of-synthetic-data" class="section level3" number="2.1.1">
 <h3><span class="header-section-number">2.1.1</span> Simulation of synthetic data</h3>
-<p>We generate the synthetic spatial Poisson count data following model \eqref{eq:NEF_model} with sample size <span class="math inline">\(n = 100\)</span> and locations sampled uniformly from <span class="math inline">\([0, 1]^2\)</span>, the unit square and, <span class="math inline">\(\sigma^2_z = 0.4\)</span>, <span class="math inline">\(\beta = (5, -0.5)\)</span> and, latent Gaussian process with correlation function \eqref{eq:matern} with <span class="math inline">\(\phi = 3.5\)</span> and <span class="math inline">\(\nu = 0.5\)</span> (exponential covariogram)
-<span class="math display">\[\begin{equation}\label{eq: sim1}
+<p>We generate the synthetic spatial Poisson count data following model <a href="#eq:NEF">(2.1)</a> with sample size <span class="math inline">\(n = 100\)</span> and locations sampled uniformly from <span class="math inline">\([0, 1]^2\)</span>, the unit square and, <span class="math inline">\(\sigma^2_z = 0.4\)</span>, <span class="math inline">\(\beta = (5, -0.5)\)</span> and, latent Gaussian process with correlation function <a href="#eq:matern">(2.2)</a> with <span class="math inline">\(\phi = 3.5\)</span> and <span class="math inline">\(\nu = 0.5\)</span> (exponential covariogram)
+<span class="math display" id="eq:sim1">\[\begin{equation}
 \begin{split}
 y(s_i) &amp;\sim \mathrm{Poisson}(\lambda(s_i)), \quad i = 1, \dots, 100.\\
 \lambda(s_i) &amp; = \exp(x(s_i)^{ \top }\beta + z(s_i))
 \end{split}
+\tag{2.3}
 \end{equation}\]</span>
 We use the function <code>sim_count</code> for generate the above specified synthetic Poisson count data.</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1729</span>)</span>
@@ -897,13 +890,14 @@ Figure 2.5: Comparison of posterior quantiles of regression coefficients.
 <h2><span class="header-section-number">2.2</span> Spatial binomial regression</h2>
 <div id="simulation-of-synthetic-data-1" class="section level3" number="2.2.1">
 <h3><span class="header-section-number">2.2.1</span> Simulation of synthetic data</h3>
-<p>We generate the synthetic spatial binomial count data with sample size <span class="math inline">\(n = 100\)</span> and locations sampled uniformly from <span class="math inline">\([0, 1]^2\)</span>, the unit square and, <span class="math inline">\(\sigma^2_z = 0.4\)</span>, <span class="math inline">\(\beta = (1, -0.5)\)</span> and, spatial process parameters <span class="math inline">\(\phi = 3.5\)</span> and <span class="math inline">\(\nu = 0.5\)</span> (exponential covariogram)
-<span class="math display">\[\begin{equation}
+<p>We generate the synthetic spatial binomial count data from model <a href="#eq:NEF">(2.1)</a> with sample size <span class="math inline">\(n = 100\)</span> and locations sampled uniformly from <span class="math inline">\([0, 1]^2\)</span>, the unit square and, <span class="math inline">\(\sigma^2_z = 0.4\)</span>, <span class="math inline">\(\beta = (1, -0.5)\)</span> and, latent Gaussian process with correlation function <a href="#eq:matern">(2.2)</a> with spatial process parameters <span class="math inline">\(\phi = 3.5\)</span> and <span class="math inline">\(\nu = 0.5\)</span> (exponential covariogram)
+<span class="math display" id="eq:sim2">\[\begin{equation}
 \begin{split}
 m(s_i) &amp; \sim \mathrm{Poisson}(20), \quad i = 1, \dots, 100.\\
 y(s_i) &amp;\sim \mathrm{Binomial}(m(s_i), \pi(s_i)), \quad i = 1, \dots, 100. \\
 \text{where, } \pi(s_i) &amp;= \mathrm{ilogit}(x(s_i)^{ \top }\beta + z(s_i)) = \frac{\exp(x(s_i)^{ \top }\beta + z(s_i))}{1 + \exp(x(s_i)^{ \top }\beta + z(s_i))}
 \end{split}
+\tag{2.4}
 \end{equation}\]</span>
 We use the function <code>sim_binom</code> for generate the above specified synthetic Poisson count data.</p>
 <div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">1729</span>)</span>
@@ -1036,32 +1030,31 @@ attached base packages:
 [8] base     
 
 other attached packages:
- [1] rmarkdown_2.26     ggpubr_0.6.0       kableExtra_1.4.0   spBayes_0.4-7     
- [5] knitr_1.45         latex2exp_0.9.6    MBA_0.1-0          ggplot2_3.5.0     
- [9] dplyr_1.1.4        geoR_1.9-4         Rmosek_10.1.14     Matrix_1.6-5      
-[13] CVXR_1.0-12        loo_2.7.0          progress_1.2.3     Rfast_2.1.0       
-[17] RcppParallel_5.1.7 RcppZiggurat_0.1.6 Rcpp_1.0.12        MASS_7.3-60.0.1   
+ [1] ggpubr_0.6.0       spBayes_0.4-7      knitr_1.45         latex2exp_0.9.6   
+ [5] MBA_0.1-0          ggplot2_3.5.0      dplyr_1.1.4        geoR_1.9-4        
+ [9] Rmosek_10.1.14     Matrix_1.6-5       CVXR_1.0-12        loo_2.7.0         
+[13] progress_1.2.3     Rfast_2.1.0        RcppParallel_5.1.7 RcppZiggurat_0.1.6
+[17] Rcpp_1.0.12        MASS_7.3-60.0.1   
 
 loaded via a namespace (and not attached):
- [1] tidyselect_1.2.0   viridisLite_0.4.2  Rmpfr_0.9-5        farver_2.1.1      
- [5] fastmap_1.1.1      digest_0.6.34      lifecycle_1.0.4    magrittr_2.0.3    
- [9] compiler_4.3.1     rlang_1.1.3        sass_0.4.8         tools_4.3.1       
-[13] utf8_1.2.4         yaml_2.3.8         ggsignif_0.6.4     prettyunits_1.2.0 
-[17] labeling_0.4.3     bit_4.0.5          sp_2.1-3           xml2_1.3.6        
-[21] RColorBrewer_1.1-3 abind_1.4-5        withr_3.0.0        purrr_1.0.2       
-[25] grid_4.3.1         fansi_1.0.6        colorspace_2.1-0   scales_1.3.0      
-[29] cli_3.6.2          crayon_1.5.2       generics_0.1.3     rstudioapi_0.15.0 
-[33] magic_1.6-1        cachem_1.0.8       stringr_1.5.1      matrixStats_1.2.0 
-[37] vctrs_0.6.5        jsonlite_1.8.8     carData_3.0-5      bookdown_0.39     
-[41] car_3.1-2          hms_1.1.3          bit64_4.0.5        rstatix_0.7.2     
-[45] Formula_1.2-5      systemfonts_1.0.6  jquerylib_0.1.4    tidyr_1.3.1       
-[49] splancs_2.01-44    glue_1.7.0         codetools_0.2-19   cowplot_1.1.3     
-[53] stringi_1.8.3      gtable_0.3.4       gmp_0.7-4          munsell_0.5.0     
-[57] tibble_3.2.1       pillar_1.9.0       htmltools_0.5.7    R6_2.5.1          
-[61] tcltk_4.3.1        evaluate_0.23      lattice_0.22-5     highr_0.10        
-[65] backports_1.4.1    broom_1.0.5        bslib_0.6.1        gridExtra_2.3     
-[69] svglite_2.1.3      coda_0.19-4.1      checkmate_2.3.1    xfun_0.42         
-[73] pkgconfig_2.0.3   </code></pre>
+ [1] gtable_0.3.4       xfun_0.42          bslib_0.6.1        rstatix_0.7.2     
+ [5] lattice_0.22-5     vctrs_0.6.5        tools_4.3.1        generics_0.1.3    
+ [9] tibble_3.2.1       fansi_1.0.6        highr_0.10         pkgconfig_2.0.3   
+[13] checkmate_2.3.1    RColorBrewer_1.1-3 lifecycle_1.0.4    farver_2.1.1      
+[17] compiler_4.3.1     stringr_1.5.1      munsell_0.5.0      carData_3.0-5     
+[21] htmltools_0.5.7    sass_0.4.8         yaml_2.3.8         gmp_0.7-4         
+[25] Formula_1.2-5      car_3.1-2          tidyr_1.3.1        pillar_1.9.0      
+[29] crayon_1.5.2       jquerylib_0.1.4    cachem_1.0.8       abind_1.4-5       
+[33] tidyselect_1.2.0   digest_0.6.34      stringi_1.8.3      purrr_1.0.2       
+[37] bookdown_0.39      labeling_0.4.3     magic_1.6-1        cowplot_1.1.3     
+[41] fastmap_1.1.1      grid_4.3.1         colorspace_2.1-0   cli_3.6.2         
+[45] magrittr_2.0.3     utf8_1.2.4         broom_1.0.5        withr_3.0.0       
+[49] Rmpfr_0.9-5        prettyunits_1.2.0  scales_1.3.0       backports_1.4.1   
+[53] sp_2.1-3           bit64_4.0.5        rmarkdown_2.26     matrixStats_1.2.0 
+[57] bit_4.0.5          gridExtra_2.3      ggsignif_0.6.4     hms_1.1.3         
+[61] coda_0.19-4.1      evaluate_0.23      splancs_2.01-44    tcltk_4.3.1       
+[65] rlang_1.1.3        glue_1.7.0         rstudioapi_0.15.0  jsonlite_1.8.8    
+[69] R6_2.5.1          </code></pre>
 </div>
 </div>
 
@@ -1110,7 +1103,7 @@ $(document).ready(function () {
   (function () {
     var script = document.createElement("script");
     script.type = "text/javascript";
-    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    script.src  = "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js";
     document.getElementsByTagName("head")[0].appendChild(script);
   })();
 </script>
