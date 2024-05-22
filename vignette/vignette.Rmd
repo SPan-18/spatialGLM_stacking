@@ -408,6 +408,98 @@ ggarrange(pbinom_z1, pbinom_z2, nrow = 1, labels = 'auto',
           common.legend = TRUE, legend="right")
 ```
 
+# Spatial-temporal regressions
+
+```{r sim3, cache=TRUE, cache.path="cache/"}
+set.seed(1729)
+simdat <- sim_sptv_continuous(n = 100, beta = c(5, -0.5),
+                              phi_s = c(2, 4), phi_t = c(0.5, 1),
+                              sz = c(0.25, 0.5))
+```
+
+```{r}
+y <- as.numeric(simdat$y)
+X <- as.matrix(simdat[, grep("x", names(simdat))])
+S <- as.matrix(simdat[, c("s1", "s2")])
+time <- as.numeric(simdat$time)
+
+# Number of posterior samples
+n_postsamp <- 500
+
+# supply grid of candidate values of model parameters
+mod_list <- list(G_phi_s = c(2, 3, 5), G_phi_t = c(0.25, 0.75, 1.5),
+                 G_epsilon = c(0.25, 0.5), G_nu_xi = c(1), 
+                 G_nu_beta = c(3), G_nu_z = c(3))
+
+# create candidate model list
+mod_list <- create_candidate_models(mod_list)
+```
+
+```{r stack3, cache=TRUE, cache.path="cache/"}
+m_out <- sptvGLM_stack(y = y, X = X, X_tilde = X, S = S, time = time,
+                       N.samp = n_postsamp, MC.samp = 200,
+                       family = "poisson",
+                       mc.cores = 6, solver = "MOSEK",
+                       mod_params_list = mod_list)
+```
+
+```{r mcmc2, cache=TRUE, cache.path="cache/"}
+n_postsamp <- 10000
+
+t_mcmc_start <- Sys.time()
+mod_out <- sptvGLM_adaMetropGibbs(y = y, X = X, X_tilde = X, 
+                                  S = S, time = time, 
+                                  family = "poisson", 
+                                  N.samp = n_postsamp, 
+                                  starting = list(phi_s = c(3, 2.5), 
+                                                  phi_t = c(1, 0.9),
+                                                  beta = c(0, 0)), 
+                                  prior = list(phi_s_a = c(0.5, 0.5),
+                                               phi_s_b = c(10, 10),
+                                               phi_t_a = c(0.5, 0.5),
+                                               phi_t_b = c(10, 10),
+                                               nu_xi = 1, nu_beta = 3,
+                                               nu_z = 3, alpha_epsilon = 0.5),
+                                  n.batch = 3, batch.length = 10)
+t_mcmc_end <- Sys.time()
+t_mcmc_elpased <- t_mcmc_end - t_mcmc_start
+cat("Elapsed ", t_mcmc_elpased, units(t_mcmc_elpased), ".\n")
+```
+
+```{r}
+burnin_pc <- 0.5           # percentage burn-in
+n_thin <- 10               # consider every *-th sample
+
+ids <- 1:n_postsamp
+ids <- ids[-(1:(floor(burnin_pc * n_postsamp))+1)]
+ids <- ids[c(rep(FALSE, n_thin - 1), TRUE)]
+
+post_beta_mcmc <- mod_out$beta[, ids]
+post_z_mcmc <- mod_out$z[, ids]
+post_phi_s <- mod_out$phi_s[, ids]
+post_phi_t <- mod_out$phi_t[, ids]
+
+print(ci_beta(t(post_beta)))
+```
+
+```{r, fig.height=5}
+post_spParams <- as.data.frame(cbind(t(post_phi_s), t(post_phi_t)))
+names(post_spParams) <- c("phi_s_1", "phi_s_2", "phi_t_1", "phi_t_2")
+spParams_names <- c('phi_s_1' = TeX('$\\phi_{s1}$'), 
+                    'phi_s_2' = TeX('$\\phi_{s2}$'),
+                    'phi_t_1' = TeX('$\\phi_{t1}$'),
+                    'phi_t_2' = TeX('$\\phi_{t2}$'))
+spParams_labeller <- as_labeller(spParams_names, default = label_parsed)
+library(tidyr)
+ggplot(gather(post_spParams), aes(value)) + 
+  geom_histogram(aes(y = after_stat(density)), bins = 30,
+                 color = "black", fill = "royalblue4", alpha = 0.5) + 
+  geom_density(fill = "skyblue", alpha = 0.25) +
+  xlab("") + ylab("Posterior density") +
+  facet_wrap(~ key, labeller = spParams_labeller, scales = 'free') +
+  theme_bw() + theme(panel.grid = element_blank())
+```
+
 
 # References {-}
 

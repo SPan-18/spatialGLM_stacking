@@ -45,3 +45,9 @@ print(ci_beta(t(post_beta)))
 # p23 <- pointref_plot(simdat[200+1:100, ], "postmedian_z", legend_title = leg_title, h = h1)
 # gridExtra::grid.arrange(p11, p12, p13, p21, p22, p23, nrow = 2)
 
+post_spParams <- as.data.frame(cbind(t(post_phi_s), t(post_phi_t)))
+names(post_spParams) <- c("phi11", "phi12", "phi21", "phi22")
+library(tidyr)
+ggplot(gather(post_spParams), aes(value)) + 
+  geom_histogram(bins = 30) + 
+  facet_wrap(~key, scales = 'free_x')

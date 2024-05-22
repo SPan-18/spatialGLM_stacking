@@ -353,4 +353,3 @@ sptv_prod <- function(X_tilde, z){
 # G1 <- makeG(X1)
 # res2 <- G1 %*% z1
 # summary(as.numeric(res1 - res2))
-

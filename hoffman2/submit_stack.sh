@@ -3,7 +3,7 @@
 # error = Merged with joblog
 #$ -o joblog.$JOB_ID #creates a file called joblog.jobidnumber to write to.
 #$ -j y
-#$ -l h_data=3G,h_rt=10:00:00,highp #requests 30 minutes, 2GB of data (per core)
+#$ -l h_data=3G,h_rt=30:00:00,highp #requests 30 minutes, 2GB of data (per core)
 #$ -pe shared 6 #requests 2 cores
 # Email address to notify
 #$ -M $USER@mail #don't change this line, finds your email in the system
@@ -18,6 +18,6 @@ module load cmake/3.19.5
 
 # run R code
 echo 'Running h_runtime_comparison.R' #prints this quote to joblog.jobidnumber
-Rscript h_poisson_mlpd.R > output.$JOB_ID 2>&1
+Rscript h_sptv_stack.R > output.$JOB_ID 2>&1
 # command-line arguments: number of samples, number of repetitions, seed, command to create n samples
 # outputs any text (stdout and stderr) to output.$JOB_ID
