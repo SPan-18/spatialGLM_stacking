@@ -2,12 +2,12 @@ rm(list = ls())
 
 source("../src/runsrc.R")
 
-n_h <- 10
-n_rep <- 2
-# samplesize_seq <- 1:5*100
-samplesize_seq <- 50
+n_h <- 100
+n_rep <- 20
+samplesize_seq <- 1:5*100
+# samplesize_seq <- 50
 n_train_seq <- rep(samplesize_seq, each = n_rep)
-n_postsamp_stack <- 50
+n_postsamp_stack <- 500
 
 simdat <- read.csv("../data/sim_sptv_1000.csv")
 
