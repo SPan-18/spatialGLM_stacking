@@ -47,7 +47,7 @@ for(k in 1:length(n_train_seq)){
   
   mod_list <- create_candidate_models(mod_list)
   
-  cat("Running n = 100 ...")
+  cat("Running n =", n_train, "...")
   t_stack_start <- Sys.time()
   m_out <- sptvGLM_stack(y = y, X = X, X_tilde = X, S = S, time = time,
                          N.samp = n_postsamp_stack, MC.samp = 200,

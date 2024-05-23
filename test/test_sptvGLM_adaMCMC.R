@@ -2,8 +2,9 @@ rm(list = ls())
 
 source("../src/runsrc.R")
 
-simdat <- read.csv("../data/sim_sptvcount100.3.csv")
+simdat <- read.csv("../data/sim_sptv_1000.csv")
 
+simdat <- simdat[1:100, ]
 y <- as.numeric(simdat$y)
 X <- as.matrix(simdat[, grep("x", names(simdat))])
 S <- as.matrix(simdat[, c("s1", "s2")])
@@ -15,8 +16,8 @@ mod_out <- sptvGLM_adaMetropGibbs(y = y, X = X, X_tilde = X,
                                   S = S, time = time, 
                                   family = "poisson", 
                                   N.samp = n_postsamp, 
-                                  starting = list(phi_s = c(3, 2.5), 
-                                                  phi_t = c(1, 0.9),
+                                  starting = list(phi_s = c(1, 1), 
+                                                  phi_t = c(1, 1),
                                                   beta = c(0, 0)), 
                                   prior = list(phi_s_a = c(0.5, 0.5),
                                                phi_s_b = c(10, 10),
@@ -26,10 +27,18 @@ mod_out <- sptvGLM_adaMetropGibbs(y = y, X = X, X_tilde = X,
                                                nu_z = 3, alpha_epsilon = 0.5),
                                   n.batch = 3, batch.length = 10)
 
-post_beta <- mod_out$beta
-post_z <- mod_out$z
-post_phi_s <- mod_out$phi_s
-post_phi_t <- mod_out$phi_t
+
+burnin_pc <- 0.5
+n_thin <- 5
+
+ids <- 1:n_postsamp
+ids <- ids[-(1:(floor(burnin_pc * n_postsamp))+1)]
+ids <- ids[c(rep(FALSE, n_thin - 1), TRUE)]
+
+post_beta <- mod_out$beta[, ids]
+post_z <- mod_out$z[, ids]
+post_phi_s <- mod_out$phi_s[, ids]
+post_phi_t <- mod_out$phi_t[, ids]
 
 print(ci_beta(t(post_beta)))
 
@@ -47,7 +56,7 @@ print(ci_beta(t(post_beta)))
 
 post_spParams <- as.data.frame(cbind(t(post_phi_s), t(post_phi_t)))
 names(post_spParams) <- c("phi11", "phi12", "phi21", "phi22")
-library(tidyr)
+suppressPackageStartupMessages(library(tidyr))
 ggplot(gather(post_spParams), aes(value)) + 
   geom_histogram(bins = 30) + 
   facet_wrap(~key, scales = 'free_x')

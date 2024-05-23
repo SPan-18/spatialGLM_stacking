@@ -52,7 +52,8 @@ sptParams_adaMCMC <- function(n, r, z, theta_starting,
 sptvGLM_adaMetropGibbs <- function(y, X, X_tilde, S, time, 
                                    family, n_binom = NULL, 
                                    N.samp, starting, prior,
-                                   n.batch = 3, batch.length = 10){
+                                   n.batch = 3, batch.length = 10, 
+                                   verbose = TRUE){
   
   n <- dim(X)[1]
   p <- dim(X)[2]
@@ -116,7 +117,7 @@ sptvGLM_adaMetropGibbs <- function(y, X, X_tilde, S, time,
   
   for(s in 1:N.samp){
     
-    pb$tick()
+    if(verbose){ pb$tick() }
     
     # sample posterior of eta and xi, beta, z from marginal priors
     if(family == "poisson"){
