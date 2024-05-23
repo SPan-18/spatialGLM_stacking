@@ -156,7 +156,7 @@ sptvGLM_stack <- function(y, X, X_tilde, S, time,
   
   # return(elpd_mat)
   
-  w_hat <- CVXR_stacking_weights(elpd_mat, solver = solver)
+  w_hat <- CVXR_stacking_weights(elpd_mat, solver = solver, verbose = verbose)
   w_hat <- as.numeric(w_hat)
   if(solver == "MOSEK"){
     w_hat <- sapply(w_hat, function(x) max(0, x))

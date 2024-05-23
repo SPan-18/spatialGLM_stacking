@@ -1,7 +1,7 @@
 # find stacking weights wrt log score
 
-CVXR_stacking_weights <- function(lpd_point, solver = "ECOS"){
-  message("Using ", solver, " solver to get stacking weights.")
+CVXR_stacking_weights <- function(lpd_point, solver = "ECOS", verbose = TRUE){
+  if(verbose){ message("Using ", solver, " solver to get stacking weights.") }
   if(sum(!is.finite(lpd_point)) > 0){
     minelpd <- min(lpd_point[is.finite(lpd_point)])
     lpd_point[!is.finite(lpd_point)] <- minelpd - 1
@@ -40,7 +40,7 @@ CVXR_stacking_weights <- function(lpd_point, solver = "ECOS"){
   # expr <- substitute(solvefun())
   # result <- retry_expr(expr)
   result <- solve(prob, solver = solver)
-  message("Solver status: ", result$status)
+  if(verbose){ message("Solver status: ", result$status) }
   wts <- as.numeric(result$getValue(w))
   return(wts)
 }

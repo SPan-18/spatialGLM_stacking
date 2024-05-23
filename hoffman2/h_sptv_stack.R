@@ -3,18 +3,23 @@ rm(list = ls())
 source("../src/runsrc.R")
 
 n_h <- 10
-n_rep <- 20
-samplesize_seq <- 1:5*100
-# samplesize_seq <- 50
+n_rep <- 2
+# samplesize_seq <- 1:5*100
+samplesize_seq <- 50
 n_train_seq <- rep(samplesize_seq, each = n_rep)
-# n_train_seq <- c(50, 50)
-n_postsamp_stack <- 500
+n_postsamp_stack <- 50
 
 simdat <- read.csv("../data/sim_sptv_1000.csv")
+
+temp <- simdat[1:4, ]
+simdat[1:4, ] <- simdat[n_h + 1:4, ]
+simdat[n_h + 1:4, ] <- temp
 
 mlpd_out <- data.frame(matrix(ncol = 3, nrow = length(n_train_seq)))
 names(mlpd_out) <- c("n", "mlpd", "runtime")
 mlpd_out[, "n"] <- n_train_seq
+
+write.csv(mlpd_out, "output/mlpd_poisson_stack.csv", row.names = F)
 
 for(k in 1:length(n_train_seq)){
   
@@ -42,11 +47,12 @@ for(k in 1:length(n_train_seq)){
   
   mod_list <- create_candidate_models(mod_list)
   
+  cat("Running n = 100 ...")
   t_stack_start <- Sys.time()
   m_out <- sptvGLM_stack(y = y, X = X, X_tilde = X, S = S, time = time,
                          N.samp = n_postsamp_stack, MC.samp = 200,
                          family = "poisson", mc.cores = 6, solver = "MOSEK",
-                         mod_params_list = mod_list)
+                         mod_params_list = mod_list, verbose = F)
   t_stack_end <- Sys.time()
   
   # n_postsamp_mcmc <- (n_postsamp_stack * n_thin) / (1 - burnin_pc)
@@ -72,10 +78,9 @@ for(k in 1:length(n_train_seq)){
   bigD_S <- as.matrix(dist(rbind(S_h, S)))
   bigD_t <- as.matrix(dist(c(time_h, time)))
   L <- length(m_out$models)
-  lpd_mat_stack <- array(dim = c(n_h, L))
   
-  for(i in 1:L){
-    cat("Stack lpd: n = ", n_train, " Model", i, "\n")
+  cat("calculating MLPD")
+  lpd_list <- mclapply(1:L, function(i){
     phi_s <- mod_list[[i]]$phi_s
     phi_t <- mod_list[[i]]$phi_t
     nu_z <- mod_list[[i]]$nu_z
@@ -89,8 +94,8 @@ for(k in 1:length(n_train_seq)){
     for(j in 1:r){
       ids <- ((j-1)*n_train+1):(j*n_train)
       idsk <- ((j-1)*nk+1):(j*nk)
-      z_pred[idsk, ] <- predict_z(z_post = m_out$models[[i]]$z[ids, ], 
-                                  J = bigV[n_h + 1:n_train, 1:n_h], 
+      z_pred[idsk, ] <- predict_z(z_post = m_out$models[[i]]$z[ids, ],
+                                  J = bigV[n_h + 1:n_train, 1:n_h],
                                   cholV = chol_train,
                                   V_tilde = bigV[1:n_h, 1:n_h], nu_z = nu_z)
     }
@@ -101,13 +106,17 @@ for(k in 1:length(n_train_seq)){
     y_pred <- t(apply(mu, 1, function(x) rpois(1:length(x), x)))
     p_y_pred <- t(sapply(1:n_h, function(x) dpois(y_pred[x, ], y_h[x])))
     p_y_pred <- apply(p_y_pred, 1, mean)
-    lpd_mat_stack[, i] <- p_y_pred
-  }
+    
+    return(p_y_pred)
+  }, mc.cores = 6)
+  
+  lpd_mat_stack <- do.call('cbind', lpd_list)
   
   w_opt <- m_out$weights
   mlpd <- mean(log(lpd_mat_stack %*% w_opt))
   
   mlpd_out[k, "mlpd"] <- mlpd
+  cat(" =", mlpd, "\n")
+  
+  write.csv(mlpd_out, "output/mlpd_poisson_stack.csv", row.names = F)
 }
-
-write.csv(mlpd_out, "output/mlpd_poisson_stack.csv", row.names = F)

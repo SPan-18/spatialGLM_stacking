@@ -17,7 +17,7 @@ module load gcc/11.3.0
 module load cmake/3.19.5
 
 # run R code
-echo 'Running h_runtime_comparison.R' #prints this quote to joblog.jobidnumber
+echo 'Running h_sptv_stack.R' #prints this quote to joblog.jobidnumber
 Rscript h_sptv_stack.R > output.$JOB_ID 2>&1
 # command-line arguments: number of samples, number of repetitions, seed, command to create n samples
 # outputs any text (stdout and stderr) to output.$JOB_ID
