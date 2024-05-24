@@ -4,7 +4,7 @@ source("../src/runsrc.R")
 
 n_h <- 100
 n_rep <- 1
-samplesize_seq <- c(1000, 2000, 3000, 4000, 4900)
+samplesize_seq <- c(600, 700, 800, 900, 1000, 2000, 3000, 4000, 4900)
 # samplesize_seq <- 50
 n_train_seq <- rep(samplesize_seq, each = n_rep)
 n_postsamp_stack <- 500
