@@ -3,9 +3,9 @@ rm(list = ls())
 source("../src/runsrc.R")
 
 n_h <- 100
-n_rep <- 20
-samplesize_seq <- 1:5*100
-# samplesize_seq <- 50
+n_rep <- 2
+# samplesize_seq <- 1:5*100
+samplesize_seq <- 50
 n_train_seq <- rep(samplesize_seq, each = n_rep)
 n_postsamp_stack <- 500
 
@@ -41,8 +41,8 @@ for(k in 1:length(n_train_seq)){
   S <- as.matrix(simdat_t[, c("s1", "s2")])
   time <- as.numeric(simdat_t$time)
   
-  mod_list <- list(G_phi_s = c(2, 3, 10), G_phi_t = c(0.25, 0.9, 1.5),
-                   G_epsilon = c(0.25, 0.5), G_nu_xi = c(1),
+  mod_list <- list(G_phi_s = c(1.5, 3, 4.5), G_phi_t = c(0.3, 0.7, 1.2),
+                   G_epsilon = c(0.5, 0.75), G_nu_xi = c(1),
                    G_nu_beta = c(3), G_nu_z = c(3))
   
   mod_list <- create_candidate_models(mod_list)
@@ -55,25 +55,8 @@ for(k in 1:length(n_train_seq)){
                          mod_params_list = mod_list, verbose = F)
   t_stack_end <- Sys.time()
   
-  # n_postsamp_mcmc <- (n_postsamp_stack * n_thin) / (1 - burnin_pc)
-  # t_mcmc_start <- Sys.time()
-  # mod_out <- sptvGLM_adaMetropGibbs(y = y, X = X, X_tilde = X, 
-  #                                   S = S, time = time, 
-  #                                   family = "poisson", 
-  #                                   N.samp = n_postsamp_mcmc, 
-  #                                   starting = list(phi_s = c(1, 1), 
-  #                                                   phi_t = c(1, 1),
-  #                                                   beta = c(0, 0)), 
-  #                                   prior = list(phi_s_a = c(0.1, 0.1),
-  #                                                phi_s_b = c(10, 10),
-  #                                                phi_t_a = c(0.1, 0.1),
-  #                                                phi_t_b = c(10, 10),
-  #                                                nu_xi = 1, nu_beta = 3,
-  #                                                nu_z = 3, alpha_epsilon = 0.5),
-  #                                   n.batch = 3, batch.length = 10)
-  # t_mcmc_end <- Sys.time()
-  
-  mlpd_out[k, "runtime"] <- as.numeric(difftime(t_stack_end, t_stack_start), units = "secs")
+  mlpd_out[k, "runtime"] <- as.numeric(difftime(t_stack_end, t_stack_start), 
+                                       units = "secs")
   
   bigD_S <- as.matrix(dist(rbind(S_h, S)))
   bigD_t <- as.matrix(dist(c(time_h, time)))
@@ -103,8 +86,8 @@ for(k in 1:length(n_train_seq)){
     X_tilde_h_z <- sptv_prod(X_tilde_h, z_pred)
     mu <- exp(X_h %*% m_out$models[[i]]$beta + X_tilde_h_z)
     
-    y_pred <- t(apply(mu, 1, function(x) rpois(1:length(x), x)))
-    p_y_pred <- t(sapply(1:n_h, function(x) dpois(y_pred[x, ], y_h[x])))
+    # y_pred <- t(apply(mu, 1, function(x) rpois(1:length(x), x)))
+    p_y_pred <- t(sapply(1:n_h, function(x) dpois(y_h[x], mu[x, ])))
     p_y_pred <- apply(p_y_pred, 1, mean)
     
     return(p_y_pred)
@@ -112,7 +95,7 @@ for(k in 1:length(n_train_seq)){
   
   lpd_mat_stack <- do.call('cbind', lpd_list)
   
-  w_opt <- m_out$weights
+  w_opt <- matrix(m_out$weights, nrow = L, ncol = 1)
   mlpd <- mean(log(lpd_mat_stack %*% w_opt))
   
   mlpd_out[k, "mlpd"] <- mlpd

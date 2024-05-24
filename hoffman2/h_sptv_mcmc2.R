@@ -3,7 +3,7 @@ rm(list = ls())
 source("../src/runsrc.R")
 
 n_h <- 100
-n_rep <- 5
+n_rep <- 2
 samplesize_seq <- 1:5*100
 # samplesize_seq <- 50
 n_train_seq <- rep(samplesize_seq, each = n_rep)
@@ -19,7 +19,7 @@ mlpd_out <- data.frame(matrix(ncol = 3, nrow = length(n_train_seq)))
 names(mlpd_out) <- c("n", "mlpd", "runtime")
 mlpd_out[, "n"] <- n_train_seq
 
-write.csv(mlpd_out, "output/mlpd_poisson_mcmc.csv", row.names = F)
+write.csv(mlpd_out, "output/mlpd_poisson_mcmc2.csv", row.names = F)
 
 burnin_pc <- 0.5
 n_thin <- 5
@@ -46,33 +46,31 @@ for(k in 1:length(n_train_seq)){
   
   cat("Running n =", n_train, "...")
   t_mcmc_start <- Sys.time()
-  mod_out <- sptvGLM_adaMetropGibbs(y = y, X = X, X_tilde = X, 
-                                    S = S, time = time, 
-                                    family = "poisson", 
-                                    N.samp = n_postsamp_mcmc, 
-                                    starting = list(phi_s = c(1, 1), 
-                                                    phi_t = c(1, 1),
-                                                    beta = c(0, 0)), 
-                                    prior = list(phi_s_a = c(0.5, 0.5),
-                                                 phi_s_b = c(10, 10),
-                                                 phi_t_a = c(0.5, 0.5),
-                                                 phi_t_b = c(10, 10),
-                                                 nu_xi = 1, nu_beta = 3,
-                                                 nu_z = 3, alpha_epsilon = 0.5),
-                                    n.batch = 3, batch.length = 10,
-                                    verbose = F)
+  mod_out <- sptvGLM_adaMetropGibbs2(y = y, X = X, X_tilde = X, 
+                                     S = S, time = time, 
+                                     family = "poisson", 
+                                     N.samp = n_postsamp_mcmc, 
+                                     starting = list(phi_s = 1, phi_t = 1,
+                                                     beta = c(0, 0)), 
+                                     prior = list(phi_s_a = 0.5, phi_s_b = 10,
+                                                  phi_t_a = 0.5, phi_t_b = 10,
+                                                  nu_xi = 1, nu_beta = 3,
+                                                  nu_z = 3, alpha_epsilon = 0.5),
+                                     n.batch = 3, batch.length = 10,
+                                     verbose = F)
   t_mcmc_end <- Sys.time()
   
-  mlpd_out[k, "runtime"] <- as.numeric(difftime(t_mcmc_end, t_mcmc_start), units = "secs")
+  mlpd_out[k, "runtime"] <- as.numeric(difftime(t_mcmc_end, t_mcmc_start), 
+                                       units = "secs")
   
   ids <- 1:n_postsamp_mcmc
-  ids <- ids[-(1:(floor(burnin_pc * n_postsamp_mcmc))+1)]
+  ids <- ids[-(1:(floor(burnin_pc * n_postsamp_mcmc)))]
   ids <- ids[c(rep(FALSE, n_thin - 1), TRUE)]
   
   post_beta <- mod_out$beta[, ids]
   post_z <- mod_out$z[, ids]
-  post_phi_s <- mod_out$phi_s[, ids]
-  post_phi_t <- mod_out$phi_t[, ids]
+  post_phi_s <- mod_out$phi_s[ids]
+  post_phi_t <- mod_out$phi_t[ids]
   
   bigD_S <- as.matrix(dist(rbind(S_h, S)))
   bigD_t <- as.matrix(dist(c(time_h, time)))
@@ -83,22 +81,22 @@ for(k in 1:length(n_train_seq)){
   cat("calculating MLPD")
   for(i in 1:length(ids)){
     
-    phi_s <- post_phi_s[, i]
-    phi_t <- post_phi_t[, i]
+    phi_s <- post_phi_s[i]
+    phi_t <- post_phi_t[i]
     nu_z <- 3                       # WARNING: SOFT CODE
     
-    bigV <- lapply(1:r, function(x){ 1/(1 + phi_t[x]*bigD_t) * 
-        exp(- (phi_s[x]*bigD_S) / sqrt(1 + phi_t[x]*bigD_t)) })
-    chol_train <- lapply(bigV, function(x){ chol(x[n_h + 1:n_train, n_h + 1:n_train]) })
+    bigV <- 1/(1 + phi_t*bigD_t) * 
+      exp(- (phi_s*bigD_S) / sqrt(1 + phi_t*bigD_t))
+    chol_train <- chol(bigV[n_h + 1:n_train, n_h + 1:n_train])
     
     z_pred <- array(dim = c(nk*r))
     for(j in 1:r){
       ids <- ((j-1)*n_train+1):(j*n_train)
       idsk <- ((j-1)*nk+1):(j*nk)
       z_pred[idsk] <- predict_z(z_post = mod_out$z[ids, i],
-                                J = bigV[[j]][n_h + 1:n_train, 1:n_h],
-                                cholV = chol_train[[j]],
-                                V_tilde = bigV[[j]][1:n_h, 1:n_h], nu_z = nu_z)
+                                J = bigV[n_h + 1:n_train, 1:n_h],
+                                cholV = chol_train,
+                                V_tilde = bigV[1:n_h, 1:n_h], nu_z = nu_z)
     }
     
     z_pred <- as.numeric(z_pred)
@@ -118,6 +116,6 @@ for(k in 1:length(n_train_seq)){
   mlpd_out[k, "mlpd"] <- mlpd
   cat(" =", mlpd, "\n")
   
-  write.csv(mlpd_out, "mlpd_poisson_stack.csv", row.names = F)
+  write.csv(mlpd_out, "output/mlpd_poisson_mcmc2.csv", row.names = F)
 }
 
