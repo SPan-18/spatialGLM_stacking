@@ -3,13 +3,13 @@ rm(list = ls())
 source("../src/runsrc.R")
 
 n_h <- 100
-n_rep <- 2
-# samplesize_seq <- 1:5*100
-samplesize_seq <- 50
+n_rep <- 1
+samplesize_seq <- c(1000, 2000, 3000, 4000, 4900)
+# samplesize_seq <- 50
 n_train_seq <- rep(samplesize_seq, each = n_rep)
 n_postsamp_stack <- 500
 
-simdat <- read.csv("../data/sim_sptv_1000.csv")
+simdat <- read.csv("../data/sim_sptv_5000.csv")
 
 temp <- simdat[1:4, ]
 simdat[1:4, ] <- simdat[n_h + 1:4, ]
@@ -58,48 +58,48 @@ for(k in 1:length(n_train_seq)){
   mlpd_out[k, "runtime"] <- as.numeric(difftime(t_stack_end, t_stack_start), 
                                        units = "secs")
   
-  bigD_S <- as.matrix(dist(rbind(S_h, S)))
-  bigD_t <- as.matrix(dist(c(time_h, time)))
-  L <- length(m_out$models)
-  
-  cat("calculating MLPD")
-  lpd_list <- mclapply(1:L, function(i){
-    phi_s <- mod_list[[i]]$phi_s
-    phi_t <- mod_list[[i]]$phi_t
-    nu_z <- mod_list[[i]]$nu_z
-    
-    bigV <- V_z <- 1/(1 + phi_t*bigD_t) * exp(- (phi_s*bigD_S) / sqrt(1 + phi_t*bigD_t))
-    chol_train <- chol(bigV[n_h + 1:n_train, n_h + 1:n_train])
-    
-    nk <- dim(X_tilde_h)[1]
-    r <- dim(X_tilde_h)[2]
-    z_pred <- array(dim = c(nk*r, n_postsamp_stack))
-    for(j in 1:r){
-      ids <- ((j-1)*n_train+1):(j*n_train)
-      idsk <- ((j-1)*nk+1):(j*nk)
-      z_pred[idsk, ] <- predict_z(z_post = m_out$models[[i]]$z[ids, ],
-                                  J = bigV[n_h + 1:n_train, 1:n_h],
-                                  cholV = chol_train,
-                                  V_tilde = bigV[1:n_h, 1:n_h], nu_z = nu_z)
-    }
-    
-    X_tilde_h_z <- sptv_prod(X_tilde_h, z_pred)
-    mu <- exp(X_h %*% m_out$models[[i]]$beta + X_tilde_h_z)
-    
-    # y_pred <- t(apply(mu, 1, function(x) rpois(1:length(x), x)))
-    p_y_pred <- t(sapply(1:n_h, function(x) dpois(y_h[x], mu[x, ])))
-    p_y_pred <- apply(p_y_pred, 1, mean)
-    
-    return(p_y_pred)
-  }, mc.cores = 6)
-  
-  lpd_mat_stack <- do.call('cbind', lpd_list)
-  
-  w_opt <- matrix(m_out$weights, nrow = L, ncol = 1)
-  mlpd <- mean(log(lpd_mat_stack %*% w_opt))
-  
-  mlpd_out[k, "mlpd"] <- mlpd
-  cat(" =", mlpd, "\n")
+  # bigD_S <- as.matrix(dist(rbind(S_h, S)))
+  # bigD_t <- as.matrix(dist(c(time_h, time)))
+  # L <- length(m_out$models)
+  # 
+  # cat("calculating MLPD")
+  # lpd_list <- mclapply(1:L, function(i){
+  #   phi_s <- mod_list[[i]]$phi_s
+  #   phi_t <- mod_list[[i]]$phi_t
+  #   nu_z <- mod_list[[i]]$nu_z
+  #   
+  #   bigV <- V_z <- 1/(1 + phi_t*bigD_t) * exp(- (phi_s*bigD_S) / sqrt(1 + phi_t*bigD_t))
+  #   chol_train <- chol(bigV[n_h + 1:n_train, n_h + 1:n_train])
+  #   
+  #   nk <- dim(X_tilde_h)[1]
+  #   r <- dim(X_tilde_h)[2]
+  #   z_pred <- array(dim = c(nk*r, n_postsamp_stack))
+  #   for(j in 1:r){
+  #     ids <- ((j-1)*n_train+1):(j*n_train)
+  #     idsk <- ((j-1)*nk+1):(j*nk)
+  #     z_pred[idsk, ] <- predict_z(z_post = m_out$models[[i]]$z[ids, ],
+  #                                 J = bigV[n_h + 1:n_train, 1:n_h],
+  #                                 cholV = chol_train,
+  #                                 V_tilde = bigV[1:n_h, 1:n_h], nu_z = nu_z)
+  #   }
+  #   
+  #   X_tilde_h_z <- sptv_prod(X_tilde_h, z_pred)
+  #   mu <- exp(X_h %*% m_out$models[[i]]$beta + X_tilde_h_z)
+  #   
+  #   # y_pred <- t(apply(mu, 1, function(x) rpois(1:length(x), x)))
+  #   p_y_pred <- t(sapply(1:n_h, function(x) dpois(y_h[x], mu[x, ])))
+  #   p_y_pred <- apply(p_y_pred, 1, mean)
+  #   
+  #   return(p_y_pred)
+  # }, mc.cores = 6)
+  # 
+  # lpd_mat_stack <- do.call('cbind', lpd_list)
+  # 
+  # w_opt <- matrix(m_out$weights, nrow = L, ncol = 1)
+  # mlpd <- mean(log(lpd_mat_stack %*% w_opt))
+  # 
+  # mlpd_out[k, "mlpd"] <- mlpd
+  # cat(" =", mlpd, "\n")
   
   write.csv(mlpd_out, "output/mlpd_poisson_stack.csv", row.names = F)
 }

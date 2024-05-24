@@ -261,7 +261,7 @@ sim_sptv_continuous <- function(n, beta, phi_s, phi_t, sz){
 }
 
 # set.seed(1729)
-# simdat <- sim_sptv_continuous(n = 1000, beta = c(5, -0.5),
+# simdat <- sim_sptv_continuous(n = 5000, beta = c(5, -0.5),
 #                               phi_s = c(2, 4), phi_t = c(0.5, 1),
 #                               sz = c(0.25, 0.5))
-# write.csv(simdat, "../data/sim_sptv_1000.csv", row.names = FALSE)
+# write.csv(simdat, "../data/sim_sptv_5000.csv", row.names = FALSE)
