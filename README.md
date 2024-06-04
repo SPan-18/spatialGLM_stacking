@@ -77,7 +77,7 @@ Licensing
 ---------
 * Code &copy; 2024, Soumyakanti Pan, licensed under [CC0 1.0 Universal](http://creativecommons.org/ns#).
 
-<!-- MARKDOWN LINKS & IMAGES -->
+<!-- MARKDOWN LINKS & IMAGES1 -->
 [contributors-shield]: https://img.shields.io/github/contributors/SPan-18/spatialGLM_stacking.svg?style=for-the-badge
 [contributors-url]: https://github.com/SPan-18/spatialGLM_stacking/graphs/contributors
 [forks-shield]: https://img.shields.io/github/forks/SPan-18/spatialGLM_stacking.svg?style=for-the-badge
