@@ -83,6 +83,6 @@ Licensing
 [forks-shield]: https://img.shields.io/github/forks/SPan-18/spatialGLM_stacking.svg?style=for-the-badge
 [forks-url]: https://github.com/SPan-18/spatialGLM_stacking/network/members
 [license-shield]: https://img.shields.io/github/license/SPan-18/spatialGLM_stacking.svg?style=for-the-badge
-[license-url]: https://github.com/SPan-18/spatialGLM_stacking/blob/master
+[license-url]: https://github.com/SPan-18/spatialGLM_stacking/blob/master/LICENSE
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://www.linkedin.com/in/soumyakanti-pan-9b660b145/
