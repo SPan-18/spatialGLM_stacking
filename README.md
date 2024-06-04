@@ -86,5 +86,3 @@ Licensing
 [license-url]: https://github.com/SPan-18/spatialGLM_stacking/blob/main/LICENSE
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://www.linkedin.com/in/soumyakanti-pan-9b660b145/
-[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
-[linkedin-url]: https://www.linkedin.com/in/soumyakanti-pan-9b660b145/
