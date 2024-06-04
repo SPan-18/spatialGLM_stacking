@@ -1,3 +1,10 @@
+<a name="readme-top"></a>
+
+[![Contributors][contributors-shield]][contributors-url]
+[![Forks][forks-shield]][forks-url]
+[![CC0-1.0 License][license-shield]][license-url]
+[![LinkedIn][linkedin-shield]][linkedin-url]
+
 # spatialGLM_stacking: Bayesian Inference For Geostatistical Count Data Using Predictive Stacking
 
 This repository contains code to implement different analyses, as it appears in the manuscript "Bayesian Inference for spatial-temporal count data using predictive stacking".
@@ -69,3 +76,13 @@ Rscript test_stack_poisson.R
 Licensing
 ---------
 * Code &copy; 2024, Soumyakanti Pan, licensed under [CC0 1.0 Universal](http://creativecommons.org/ns#).
+
+<!-- MARKDOWN LINKS & IMAGES1 -->
+[contributors-shield]: https://img.shields.io/github/contributors/SPan-18/spatialGLM_stacking.svg?style=for-the-badge
+[contributors-url]: https://github.com/SPan-18/spatialGLM_stacking/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/SPan-18/spatialGLM_stacking.svg?style=for-the-badge
+[forks-url]: https://github.com/SPan-18/spatialGLM_stacking/network/members
+[license-shield]: https://img.shields.io/github/license/SPan-18/spatialGLM_stacking.svg?style=for-the-badge
+[license-url]: https://github.com/SPan-18/spatialGLM_stacking/blob/master/LICENSE
+[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
+[linkedin-url]: https://www.linkedin.com/in/soumyakanti-pan-9b660b145/
