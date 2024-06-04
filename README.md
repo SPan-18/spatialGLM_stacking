@@ -2,7 +2,7 @@
 
 [![Contributors][contributors-shield]][contributors-url]
 [![Forks][forks-shield]][forks-url]
-[![CC0-1.0 License][forks-shield][license-url]
+[![CC0-1.0 License][license-shield][]
 [![LinkedIn][linkedin-shield]][linkedin-url]
 
 # spatialGLM_stacking: Bayesian Inference For Geostatistical Count Data Using Predictive Stacking
