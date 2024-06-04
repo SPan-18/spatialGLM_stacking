@@ -479,7 +479,7 @@ post_z_mcmc <- mod_out$z[, ids]
 post_phi_s <- mod_out$phi_s[, ids]
 post_phi_t <- mod_out$phi_t[, ids]
 
-print(ci_beta(t(post_beta)))
+print(ci_beta(t(post_beta_mcmc)))
 ```
 
 ```{r, fig.height=5}

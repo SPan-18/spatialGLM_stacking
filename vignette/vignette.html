@@ -1086,10 +1086,10 @@ STACKING WEIGHTS:
 <span id="cb47-10"><a href="#cb47-10" tabindex="-1"></a>post_phi_s <span class="ot">&lt;-</span> mod_out<span class="sc">$</span>phi_s[, ids]</span>
 <span id="cb47-11"><a href="#cb47-11" tabindex="-1"></a>post_phi_t <span class="ot">&lt;-</span> mod_out<span class="sc">$</span>phi_t[, ids]</span>
 <span id="cb47-12"><a href="#cb47-12" tabindex="-1"></a></span>
-<span id="cb47-13"><a href="#cb47-13" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">ci_beta</span>(<span class="fu">t</span>(post_beta)))</span></code></pre></div>
-<pre><code>            Mean        SD       2.5%        50%     97.5%
-beta0  2.1684088 1.6647988 -0.7484821  2.1993810  5.007036
-beta1 -0.7101008 0.3023542 -1.2664384 -0.6887212 -0.187927</code></pre>
+<span id="cb47-13"><a href="#cb47-13" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">ci_beta</span>(<span class="fu">t</span>(post_beta_mcmc)))</span></code></pre></div>
+<pre><code>            Mean        SD      2.5%        50%     97.5%
+beta0  4.2120427 0.7478722  2.681213  4.2206031 5.6340611
+beta1 -0.7123858 0.8084918 -2.291969 -0.6641883 0.7721661</code></pre>
 <div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" tabindex="-1"></a>post_spParams <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(<span class="fu">cbind</span>(<span class="fu">t</span>(post_phi_s), <span class="fu">t</span>(post_phi_t)))</span>
 <span id="cb49-2"><a href="#cb49-2" tabindex="-1"></a><span class="fu">names</span>(post_spParams) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;phi_s_1&quot;</span>, <span class="st">&quot;phi_s_2&quot;</span>, <span class="st">&quot;phi_t_1&quot;</span>, <span class="st">&quot;phi_t_2&quot;</span>)</span>
 <span id="cb49-3"><a href="#cb49-3" tabindex="-1"></a>spParams_names <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&#39;phi_s_1&#39;</span> <span class="ot">=</span> <span class="fu">TeX</span>(<span class="st">&#39;$</span><span class="sc">\\</span><span class="st">phi_{s1}$&#39;</span>), </span>
@@ -1144,32 +1144,30 @@ attached base packages:
 [8] base     
 
 other attached packages:
- [1] tidyr_1.3.1        rmarkdown_2.26     kableExtra_1.4.0   ggpubr_0.6.0      
- [5] spBayes_0.4-7      knitr_1.45         latex2exp_0.9.6    MBA_0.1-0         
- [9] ggplot2_3.5.0      dplyr_1.1.4        geoR_1.9-4         Rmosek_10.1.14    
-[13] Matrix_1.6-5       CVXR_1.0-12        loo_2.7.0          progress_1.2.3    
-[17] Rfast_2.1.0        RcppParallel_5.1.7 RcppZiggurat_0.1.6 Rcpp_1.0.12       
-[21] MASS_7.3-60.0.1   
+ [1] tidyr_1.3.1        ggpubr_0.6.0       spBayes_0.4-7      knitr_1.45        
+ [5] latex2exp_0.9.6    MBA_0.1-0          ggplot2_3.5.0      dplyr_1.1.4       
+ [9] geoR_1.9-4         Rmosek_10.1.14     Matrix_1.6-5       CVXR_1.0-12       
+[13] loo_2.7.0          progress_1.2.3     Rfast_2.1.0        RcppParallel_5.1.7
+[17] RcppZiggurat_0.1.6 Rcpp_1.0.12        MASS_7.3-60.0.1   
 
 loaded via a namespace (and not attached):
- [1] tidyselect_1.2.0   viridisLite_0.4.2  Rmpfr_0.9-5        farver_2.1.1      
- [5] fastmap_1.1.1      digest_0.6.34      lifecycle_1.0.4    magrittr_2.0.3    
- [9] compiler_4.3.1     rlang_1.1.3        sass_0.4.8         tools_4.3.1       
-[13] utf8_1.2.4         yaml_2.3.8         ggsignif_0.6.4     prettyunits_1.2.0 
-[17] labeling_0.4.3     bit_4.0.5          sp_2.1-3           xml2_1.3.6        
-[21] RColorBrewer_1.1-3 abind_1.4-5        withr_3.0.0        purrr_1.0.2       
-[25] grid_4.3.1         fansi_1.0.6        colorspace_2.1-0   scales_1.3.0      
-[29] cli_3.6.2          crayon_1.5.2       generics_0.1.3     rstudioapi_0.15.0 
-[33] magic_1.6-1        cachem_1.0.8       stringr_1.5.1      matrixStats_1.2.0 
-[37] vctrs_0.6.5        jsonlite_1.8.8     carData_3.0-5      bookdown_0.39     
-[41] car_3.1-2          hms_1.1.3          bit64_4.0.5        rstatix_0.7.2     
-[45] Formula_1.2-5      systemfonts_1.0.6  jquerylib_0.1.4    splancs_2.01-44   
-[49] glue_1.7.0         codetools_0.2-19   cowplot_1.1.3      stringi_1.8.3     
-[53] gtable_0.3.4       gmp_0.7-4          munsell_0.5.0      tibble_3.2.1      
-[57] pillar_1.9.0       htmltools_0.5.7    R6_2.5.1           tcltk_4.3.1       
-[61] evaluate_0.23      lattice_0.22-5     highr_0.10         backports_1.4.1   
-[65] broom_1.0.5        bslib_0.6.1        svglite_2.1.3      coda_0.19-4.1     
-[69] gridExtra_2.3      checkmate_2.3.1    xfun_0.42          pkgconfig_2.0.3   </code></pre>
+ [1] gtable_0.3.4       xfun_0.42          bslib_0.6.1        rstatix_0.7.2     
+ [5] lattice_0.22-5     vctrs_0.6.5        tools_4.3.1        generics_0.1.3    
+ [9] tibble_3.2.1       fansi_1.0.6        highr_0.10         pkgconfig_2.0.3   
+[13] checkmate_2.3.1    RColorBrewer_1.1-3 lifecycle_1.0.4    farver_2.1.1      
+[17] compiler_4.3.1     stringr_1.5.1      munsell_0.5.0      carData_3.0-5     
+[21] htmltools_0.5.7    sass_0.4.8         yaml_2.3.8         gmp_0.7-4         
+[25] Formula_1.2-5      car_3.1-2          pillar_1.9.0       crayon_1.5.2      
+[29] jquerylib_0.1.4    cachem_1.0.8       abind_1.4-5        tidyselect_1.2.0  
+[33] digest_0.6.34      stringi_1.8.3      purrr_1.0.2        bookdown_0.39     
+[37] labeling_0.4.3     magic_1.6-1        cowplot_1.1.3      fastmap_1.1.1     
+[41] grid_4.3.1         colorspace_2.1-0   cli_3.6.2          magrittr_2.0.3    
+[45] utf8_1.2.4         broom_1.0.5        withr_3.0.0        Rmpfr_0.9-5       
+[49] prettyunits_1.2.0  scales_1.3.0       backports_1.4.1    sp_2.1-3          
+[53] bit64_4.0.5        rmarkdown_2.26     matrixStats_1.2.0  bit_4.0.5         
+[57] gridExtra_2.3      ggsignif_0.6.4     hms_1.1.3          coda_0.19-4.1     
+[61] evaluate_0.23      splancs_2.01-44    tcltk_4.3.1        rlang_1.1.3       
+[65] glue_1.7.0         rstudioapi_0.15.0  jsonlite_1.8.8     R6_2.5.1          </code></pre>
 </div>
 </div>
 
