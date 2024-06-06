@@ -57,7 +57,7 @@ Analyzing non-Gaussian spatial-temporal data typically requires introducing spat
 ## Package requirements
 Successful run of the functions depends on installation of the following packages - `MASS`, `parallel`, `progress`, `dplyr`, `knitr`, `spBayes`, `CVXR` and `Rcpp`. Installation of `ggplot2`, `MBA`, `latex2exp` are required for reproducing graphical outputs. Installation of `Rfast`, `loo`, `Rmosek` and `geoR` are optional. The package `Rmosek` is an R interface for using the solver [MOSEK](https://docs.mosek.com/9.3/rmosek/index.html) which requires a license. One may obtain the license using academic email for free. Otherwise, one may use other solvers provided by `CVXR`, details of which will be provided in the respective sections.
 
-```{r packages, eval=FALSE}
+```{r packages, eval=TRUE}
 # Required package names
 packages <- c("MASS", "parallel", "progress", "dplyr", "knitr", "CVXR", "Rcpp",
               "ggplot2", "ggpubr", "MBA", "latex2exp", "scales",
