@@ -66,7 +66,8 @@ packages <- c("MASS", "parallel", "progress", "dplyr", "knitr", "CVXR", "Rcpp",
 # Install packages not yet installed
 installed_packages <- packages %in% rownames(installed.packages())
 if (any(installed_packages == FALSE)) {
-  install.packages(packages[!installed_packages])
+  install.packages(packages[!installed_packages], 
+                   repos = "http://cran.us.r-project.org")
 }
 ```
 
@@ -412,7 +413,8 @@ ggarrange(pbinom_z1, pbinom_z2, nrow = 1, labels = 'auto',
 
 we consider a spatial-temporal process as an uncountable set of random variables, say $\{z(\ell): \ell\in \calD\}$, over a domain of interest $\calD$. Suppose $\calL = \{\ell_1, \ldots, \ell_n\}$ denotes $n$ space-time coordinates. We consider a STVC model for spatial-temporal data as
 \begin{equation}
-y(\ell_i) \sim \mathrm{EF}(x(\ell_i)^\T \beta + \tilde{x}(\ell_i)^\T z(\ell_i)), \quad i = 1, \dots, n.\\
+y(\ell_i) \sim \mathrm{EF}(x(\ell_i)^\T \beta + \tilde{x}(\ell_i)^\T z(\ell_i); 
+b, \psi_y), \quad i = 1, \dots, n.\\
 (\#eq:stvc)
 \end{equation}
 where $x(\ell_i)$ is a $p\times 1$ vector of predictors, $\beta$ is the corresponding $p \times 1$ vector of slopes (fixed effects), $\tilde{x}(\ell_i)$ is the $r\times 1$ vector ($r \leq p$) consisting of those predictors in $x(\ell_i)$ that are posited to have spatially varying regression coefficients, and $z_j = (z_j(\ell_1),\ldots,z_j(\ell_n))^{\T}$ is $n\times 1$ with each $z_j(\ell_i)$ being a spatially-temporally varying coefficient for the predictor $\tilde{x}_j(\ell_i)$. We assume $z_j(\ell) \overset{\text{ind.}}{\sim} \CMP(\mu_{z_j}(\ell), \sigma_{z_j}^2 R_j(\cdot, \cdot; \thetasp_j))$ for each $j$, are a collection of $r$ independent $\CM$ processes with their respective parameters and log partition functions. We model the elements of $R_j(\thetasp_j)$ using the spatial-temporal correlation function
