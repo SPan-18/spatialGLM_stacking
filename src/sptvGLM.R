@@ -153,21 +153,22 @@ sptvGLM_stack <- function(y, X, X_tilde, S, time,
   #   samps[[i]]$xi <- samps[[i]]$xi[order(permut), ]
   #   samps[[i]]$elpd <- samps[[i]]$elpd[order(permut)]
   # }
-  
+  # 
   # return(elpd_mat)
   
-  w_hat <- CVXR_stacking_weights(elpd_mat, solver = solver, verbose = verbose)
+  # w_hat <- CVXR_stacking_weights(elpd_mat, solver = solver)
+  w_hat <- loo::stacking_weights(elpd_mat)
   w_hat <- as.numeric(w_hat)
   if(solver == "MOSEK"){
     w_hat <- sapply(w_hat, function(x) max(0, x))
     w_hat <- w_hat / sum(w_hat)
   }
-  
+
   t_end <- Sys.time()
-  
+
   runtime <- difftime(t_end, t_start)
   if(verbose) cat("\nRUNTIME:", round(runtime, 2), units(runtime), ".\n\n")
-  
+
   if(verbose){
     stack_out <- as.matrix(do.call(rbind, lapply(mod_params_list, unlist)))
     stack_out_names <- colnames(stack_out)
@@ -177,7 +178,7 @@ sptvGLM_stack <- function(y, X, X_tilde, S, time,
     cat("STACKING WEIGHTS:\n")
     print(knitr::kable(stack_out))
   }
-  
+
   for(i in 1:length(samps)){
     for(j in 1:r){
       ids <- ((j-1)*n+1):(j*n)
@@ -321,7 +322,7 @@ elpd_sptvGCM <- function(y_train, X_train, X_tilde_train,
   X_tilde_z <- sptv_prod(X_tilde_pred, z_pred)
   mu <- exp(X_pred %*% samp_beta + X_tilde_z)
   if(family == "poisson"){
-    elpd_mat <- dpois(y_pred, mu, log = FALSE)
+    elpd_mat <- apply(mu, 2, function(x) dpois(y_pred, x, log = FALSE))
   }else if(family == "binomial"){
     prob <- ilogit(mu)
     elpd_mat <- dbinom(y_pred, n_binom_pred, prob, log = FALSE)
@@ -353,3 +354,21 @@ sptv_prod <- function(X_tilde, z){
 # G1 <- makeG(X1)
 # res2 <- G1 %*% z1
 # summary(as.numeric(res1 - res2))
+
+postrunsampler_sptv <- function(out, N.samp){
+  stack_weights <- as.numeric(out$weights)
+  p.obs <- dim(out$models[[1]]$beta)[1]
+  n_post <- dim(out$models[[1]]$beta)[2]
+  n.obs <- dim(out$models[[1]]$xi)[1]
+  r.obs <- dim(out$models[[1]]$z)[1] / n.obs
+  ids <- sample(1:n_post, size = N.samp, replace = TRUE)
+  post_samples <- sapply(1:N.samp, function(x){
+    model_id <- sample(1:length(out$models), 1, prob = stack_weights)
+    return(c(out$models[[model_id]]$beta[, ids[x]], 
+             out$models[[model_id]]$z[, ids[x]],
+             out$models[[model_id]]$xi[, ids[x]]))
+  })
+  return(list(beta = post_samples[1:p.obs, ],
+              z = post_samples[(p.obs+1):(n.obs*r.obs+p.obs), ],
+              xi = post_samples[(n.obs*r.obs+p.obs+1):(n.obs*r.obs+p.obs+n.obs), ]))
+}

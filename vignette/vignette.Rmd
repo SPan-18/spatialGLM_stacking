@@ -60,7 +60,7 @@ Successful run of the functions depends on installation of the following package
 ```{r packages, eval=FALSE}
 # Required package names
 packages <- c("MASS", "parallel", "progress", "dplyr", "knitr", "CVXR", "Rcpp",
-              "ggplot2", "ggpubr", "MBA", "latex2exp",
+              "ggplot2", "ggpubr", "MBA", "latex2exp", "scales",
               "Rfast", "loo", "Rmosek", "geoR", "spBayes")
 
 # Install packages not yet installed
@@ -408,7 +408,23 @@ ggarrange(pbinom_z1, pbinom_z2, nrow = 1, labels = 'auto',
           common.legend = TRUE, legend="right")
 ```
 
-# Spatial-temporal regressions
+# Spatially-temporally varying coefficient (STVC) model
+
+we consider a spatial-temporal process as an uncountable set of random variables, say $\{z(\ell): \ell\in \calD\}$, over a domain of interest $\calD$. Suppose $\calL = \{\ell_1, \ldots, \ell_n\}$ denotes $n$ space-time coordinates. We consider a STVC model for spatial-temporal data as
+\begin{equation}
+y(\ell_i) \sim \mathrm{EF}(x(\ell_i)^\T \beta + \tilde{x}(\ell_i)^\T z(\ell_i)), \quad i = 1, \dots, n.\\
+(\#eq:stvc)
+\end{equation}
+where $x(\ell_i)$ is a $p\times 1$ vector of predictors, $\beta$ is the corresponding $p \times 1$ vector of slopes (fixed effects), $\tilde{x}(\ell_i)$ is the $r\times 1$ vector ($r \leq p$) consisting of those predictors in $x(\ell_i)$ that are posited to have spatially varying regression coefficients, and $z_j = (z_j(\ell_1),\ldots,z_j(\ell_n))^{\T}$ is $n\times 1$ with each $z_j(\ell_i)$ being a spatially-temporally varying coefficient for the predictor $\tilde{x}_j(\ell_i)$. We assume $z_j(\ell) \overset{\text{ind.}}{\sim} \CMP(\mu_{z_j}(\ell), \sigma_{z_j}^2 R_j(\cdot, \cdot; \thetasp_j))$ for each $j$, are a collection of $r$ independent $\CM$ processes with their respective parameters and log partition functions. We model the elements of $R_j(\thetasp_j)$ using the spatial-temporal correlation function
+\begin{equation}
+R_j(\ell, \ell'; \thetasp_j) = \frac{1}{ \phi_{tj} |t-t'|^2+1 } \exp\left(  -\frac{\phi_{sj} \| s-s' \| }{\sqrt{1+\phi_{tj} |t-t'|^2} }   \right),\quad \phi_{tj},\phi_{sj}>0 \;,
+(\#eq:corrfn)
+\end{equation}
+where $\ell=(s,t)$ and $\ell'=(s',t')$ are any two distinct space-time coordinates, $\|\cdot\|$ is the Euclidean distance over $\calS$, $\thetasp_j = (\phi_{tj}, \phi_{sj})$ are positive spatial and temporal decay parameters, respectively. Technical details can be found in ``our paper''.
+
+## Simulation of a STVC dataset
+
+We simulate a spatial-temporal Poisson count dataset of sample size 100 from \@ref(eq:stvc) with spatial-temporal processes with covariogram \@ref(eq:corrfn) in each regression coefficient. We include an intercept and a predictor sampled from a standard normal distribution and consider $\tilde{x}(\ell_i) = x(\ell_i)$ for all $i$. We choose different values for the spatial and temporal decay parameters for the each process. In particular, we take $(\phi_{t1}, \phi_{s1}) = (0.5, 2)$ and $(\phi_{t2}, \phi_{s2}) = (1, 4)$ for the spatial-temporal processes corresponding to the intercept and the predictor respectively. We also consider the marginal variances of the processes to be 0.25 ad 0.5 respectively. We choose such values to ensure we are sampling the true spatial-temporal random effects from processes characterized by different parameters.
 
 ```{r sim3, cache=TRUE, cache.path="cache/"}
 set.seed(1729)
@@ -416,6 +432,10 @@ simdat <- sim_sptv_continuous(n = 100, beta = c(5, -0.5),
                               phi_s = c(2, 4), phi_t = c(0.5, 1),
                               sz = c(0.25, 0.5))
 ```
+
+## Fitting STVC model using stacking
+
+Next, we create a list of candidate models using the function `create_candidate_models()` by passing a list with each item containing candidate values for each model parameter that we condition on in order to produce tractable posterior distributions. For practical reasons, we consider a \emph{reduced} model that assumes a pair of common process parameter shared across all spatial-temporal processes in the regression coefficients.
 
 ```{r}
 y <- as.numeric(simdat$y)
@@ -435,6 +455,8 @@ mod_list <- list(G_phi_s = c(2, 3, 5), G_phi_t = c(0.25, 0.75, 1.5),
 mod_list <- create_candidate_models(mod_list)
 ```
 
+Then, we pass the list of candidate models and the data into the function `sptvGLM_stack` with other essential options as discussed earlier.
+
 ```{r stack3, cache=TRUE, cache.path="cache/"}
 m_out <- sptvGLM_stack(y = y, X = X, X_tilde = X, S = S, time = time,
                        N.samp = n_postsamp, MC.samp = 200,
@@ -442,6 +464,20 @@ m_out <- sptvGLM_stack(y = y, X = X, X_tilde = X, S = S, time = time,
                        mc.cores = 6, solver = "MOSEK",
                        mod_params_list = mod_list)
 ```
+
+Finally, we use the optimal weights to sample from the stacked posterior and present the posterior summary of the fixed regression coefficients.
+
+```{r}
+postrun_samps <- postrunsampler_sptv(m_out, N.samp = n_postsamp)
+post_z_stack <- postrun_samps$z
+post_xi_stack <- postrun_samps$xi
+post_beta_stack <- postrun_samps$beta
+print(ci_beta(t(post_beta_stack)))
+```
+
+## Fitting STVC model using MCMC
+
+We also evaluate a fully Bayesian STVC model by assigning uniform priors on all the process parameters, using an adaptive Metropolis-within-Gibbs algorithm.
 
 ```{r mcmc2, cache=TRUE, cache.path="cache/"}
 n_postsamp <- 10000
@@ -466,6 +502,8 @@ t_mcmc_elpased <- t_mcmc_end - t_mcmc_start
 cat("Elapsed ", t_mcmc_elpased, units(t_mcmc_elpased), ".\n")
 ```
 
+Finally, we collect the chain, remove 50\% burn-in samples, and thin it, storing every 10 samples to remove autocorrelation. We also present the posterior credible intervals for the fixed regression coefficients obtained by MCMC.
+
 ```{r}
 burnin_pc <- 0.5           # percentage burn-in
 n_thin <- 10               # consider every *-th sample
@@ -482,22 +520,146 @@ post_phi_t <- mod_out$phi_t[, ids]
 print(ci_beta(t(post_beta_mcmc)))
 ```
 
-```{r, fig.height=5}
-post_spParams <- as.data.frame(cbind(t(post_phi_s), t(post_phi_t)))
-names(post_spParams) <- c("phi_s_1", "phi_s_2", "phi_t_1", "phi_t_2")
-spParams_names <- c('phi_s_1' = TeX('$\\phi_{s1}$'), 
-                    'phi_s_2' = TeX('$\\phi_{s2}$'),
-                    'phi_t_1' = TeX('$\\phi_{t1}$'),
-                    'phi_t_2' = TeX('$\\phi_{t2}$'))
-spParams_labeller <- as_labeller(spParams_names, default = label_parsed)
-library(tidyr)
-ggplot(gather(post_spParams), aes(value)) + 
+## Results 
+
+### Comparison between stacking and MCMC
+
+We compare the posterior distributions of the fixed effects and the random effects in the following plots. 
+
+#### Posterior distributions of fixed effects
+
+This figure shows the overlaid posterior densities of the fixed effects obtained from the stacked posterior (blue) and MCMC (red), revealing practically indistinguishable posterior distributions. 
+
+```{r, echo=FALSE, warning=FALSE}
+post_beta_combined1 <- as.data.frame(t(as.matrix(post_beta_mcmc)))
+post_beta_combined2 <- as.data.frame(t(as.matrix(post_beta_stack)))
+names(post_beta_combined1) <- c("beta0", "beta1")
+names(post_beta_combined2) <- c("beta0", "beta1")
+post_beta_combined1$Method <- "MCMC"
+post_beta_combined2$Method <- "Stacking"
+post_beta_combined <- rbind.data.frame(post_beta_combined1,
+                                       post_beta_combined2,
+                                       stringsAsFactors = TRUE)
+row.names(post_beta_combined) <- NULL
+post_beta_combined$Method <- factor(post_beta_combined$Method)
+
+alpha_plot <- 0.25
+plot_beta0 <- ggplot(data = post_beta_combined, aes(x = beta0)) +
+  geom_density(aes(fill = Method, color = Method), 
+               alpha = alpha_plot) +
+  # scale_color_brewer(palette = "Set1") +
+  xlim(2.0, 6.5) + xlab(latex2exp::TeX('$\\beta_1$')) + 
+  ylab("Posterior density") + theme_bw() +
+  # annotate("point", x = beta0[1], y = 0, pch = 24, fill = "#B4464B", size = 2) +
+  # geom_vline(xintercept = beta0[1], linetype = "dotted") + 
+  labs(title = "Intercept") +
+  theme(panel.grid = element_blank(), 
+        plot.title = element_text(hjust = 0.5),
+        aspect.ratio = 1)
+  # theme(panel.grid = element_blank(), legend.background = element_blank(),
+  #       legend.title = element_text(face = "italic", hjust = 0.5),
+  #       axis.title.y=element_blank(), aspect.ratio = 1)
+
+plot_beta1 <- ggplot(data = post_beta_combined, aes(x = beta1)) +
+  geom_density(aes(fill = Method, color = Method), 
+               alpha = alpha_plot) +
+  # scale_color_brewer(palette = "Set1") +
+  xlim(-3.5, 2.5) + xlab(latex2exp::TeX('$\\beta_2$')) + 
+  ylab("Posterior density") + theme_bw() +
+  # annotate("point", x = beta0[2], y = 0, pch = 24, fill = "#B4464B", size = 2) + 
+  # geom_vline(xintercept = beta0[2], linetype = "dotted") + 
+  labs(title = "Slope") +
+  theme(panel.grid = element_blank(), 
+        plot.title = element_text(hjust = 0.5), 
+        aspect.ratio = 1)
+  # theme(panel.grid = element_blank(), legend.background = element_blank(),
+  #       legend.title = element_text(face = "italic", hjust = 0.5),
+  #       axis.title.y=element_blank(), aspect.ratio = 1)
+
+plot_beta <- ggarrange(plot_beta0, plot_beta1, nrow = 1, 
+                       common.legend = TRUE, legend="right")
+```
+```{r}
+plot_beta
+```
+
+#### Posterior distributions of spatial-temporal random effects
+
+The following figure displays high agreement between the posterior medians of the spatial-temporal random effects associated with the intercept and the slope, obtained by our proposed stacking algorithm and MCMC.
+
+```{r, echo=FALSE, warning=FALSE}
+z_stack_median <- apply(post_z_stack, 1, function(x) quantile(x, 0.5))
+z_mcmc_median <- apply(post_z_mcmc, 1, function(x) quantile(x, 0.5))
+
+z1_comb <- data.frame(z_stack = z_stack_median[1:100],
+                      z_mcmc = z_mcmc_median[1:100])
+z2_comb <- data.frame(z_stack = z_stack_median[1:100 + 100],
+                      z_mcmc = z_mcmc_median[1:100 + 100])
+
+plot_z1 <- ggplot(z1_comb, aes(x = z_stack, y = z_mcmc)) +
+  geom_point(col = "grey20", size = 1, alpha = 0.5) +
+  geom_abline(slope = 1, intercept = 0, color = "red", linetype = "dashed") +
+  labs(title = latex2exp::TeX('$z_1$')) +
+  xlab("Stacking") + ylab("MCMC") +
+  theme_bw() +
+  theme(panel.grid = element_blank(), 
+        plot.title = element_text(hjust = 0.5), 
+        aspect.ratio = 1)
+
+plot_z2 <- ggplot(z2_comb, aes(x = z_stack, y = z_mcmc)) +
+  geom_point(col = "grey20", size = 1, alpha = 0.5) +
+  geom_abline(slope = 1, intercept = 0, color = "red", linetype = "dashed") +
+  labs(title = latex2exp::TeX('$z_2$')) +
+  xlab("Stacking") + ylab("MCMC") +
+  theme_bw() +
+  theme(panel.grid = element_blank(), 
+        plot.title = element_text(hjust = 0.5), 
+        aspect.ratio = 1)
+
+plot_z <- ggarrange(plot_z1, plot_z2, nrow = 1, 
+                    common.legend = FALSE, legend="right")
+```
+```{r}
+plot_z
+```
+
+### Weak identifiability of process parameters
+
+Lastly, we present histograms showing posterior distribution of the process parameters obtained by MCMC. The process parameters does not necessarily concentrate around their true values illustrating their weak identifiablity. In addition, we also observe similar patterns in the posterior distributions within the temporal ($\phi_{11}$ and $\phi_{12}$) and the spatial decay parameters ($\phi_{21}$ and $\phi_{22}$), which further motivates the assumptions of the \emph{reduced} model.
+
+```{r, echo=FALSE, warning=FALSE}
+post_spParams <- data.frame(vals = c(as.numeric(post_phi_t[1, ]), 
+                                     as.numeric(post_phi_t[2, ]),
+                                     as.numeric(post_phi_s[1, ]), 
+                                     as.numeric(post_phi_s[2, ])),
+                            params = rep(c("11", "12", 
+                                           "21", "22"), 
+                                         each = 500))
+spParams_names <- list(
+  '11' = TeX('$\\phi_{t1}$'), 
+  '12' = TeX('$\\phi_{t2}$'),
+  '21' = TeX('$\\phi_{s1}$'),
+  '22' = TeX('$\\phi_{s2}$')
+)
+spParams_labeller <- function(variable,value){
+  return(spParams_names[value])
+}
+
+plot_phi <- ggplot(post_spParams, aes(x = vals)) + 
   geom_histogram(aes(y = after_stat(density)), bins = 30,
-                 color = "black", fill = "royalblue4", alpha = 0.5) + 
+                 color = "black", fill = "royalblue4", 
+                 alpha = 0.5, linewidth = 0.25) + 
   geom_density(fill = "skyblue", alpha = 0.25) +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 3)) +
   xlab("") + ylab("Posterior density") +
-  facet_wrap(~ key, labeller = spParams_labeller, scales = 'free') +
-  theme_bw() + theme(panel.grid = element_blank())
+  facet_wrap(~ params, labeller = spParams_labeller, scales = 'free') +
+  theme_bw() + 
+  theme(panel.grid = element_blank(),
+        aspect.ratio = 1,
+        strip.text = element_text(size = 12))
+```
+```{r, fig.height=5}
+plot_phi
 ```
 
 

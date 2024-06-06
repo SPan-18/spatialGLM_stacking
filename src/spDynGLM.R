@@ -69,7 +69,8 @@ spDynGLM_stack <- function(y, Xt, S, time,
   
   elpd_mat <- do.call(cbind, lapply(samps, function(x) x$elpd))
 
-  w_hat <- CVXR_stacking_weights(elpd_mat, solver = solver)
+  # w_hat <- CVXR_stacking_weights(elpd_mat, solver = solver)
+  w_hat <- loo::stacking_weights(elpd_mat)
   w_hat <- as.numeric(w_hat)
   if(solver == "MOSEK"){
     w_hat <- sapply(w_hat, function(x) max(0, x))

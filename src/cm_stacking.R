@@ -171,8 +171,8 @@ spGLM_stack <- function(y, X, S, N.samp, MC.samp = 200,
   #             col.names = FALSE, row.names = FALSE)
   # return(elpd_mat)
   
-  w_hat <- CVXR_stacking_weights(elpd_mat, solver = solver)
-  # w_hat <- loo::stacking_weights(elpd_mat)
+  # w_hat <- CVXR_stacking_weights(elpd_mat, solver = solver)
+  w_hat <- loo::stacking_weights(elpd_mat)
   w_hat <- as.numeric(w_hat)
   if(solver == "MOSEK"){
     w_hat <- sapply(w_hat, function(x) max(0, x))
