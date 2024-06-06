@@ -31,8 +31,8 @@ post_z <- postrun_samps$z
 post_xi <- postrun_samps$xi
 post_beta <- postrun_samps$beta
 
-y.hat <- apply(exp(X %*% post_beta + post_z + post_xi), 2, function(x){rpois(dim(X)[1], x)})
-y.hat.mu <- apply(y.hat, 1, median)
+# y.hat <- apply(exp(X %*% post_beta + post_z + post_xi), 2, function(x){rpois(dim(X)[1], x)})
+# y.hat.mu <- apply(y.hat, 1, median)
 
 print(ci_beta(t(post_beta)))
 # print(ci_beta(t(m_out$models[[2]]$beta)))
@@ -41,20 +41,20 @@ print(ci_beta(t(post_beta)))
 
 # simdat$postmean_z <- apply(post_z, 1, mean)
 # simdat$postsd_z <- apply(post_z, 1, sd)
-simdat$postmedian_z <- apply(post_z + post_xi, 1, median)
-simdat$yhat <- y.hat.mu
+# simdat$postmedian_z <- apply(post_z + post_xi, 1, median)
+# simdat$yhat <- y.hat.mu
 # simdat$postcred1_z <- apply(post_z, 1, function(x) quantile(x, 0.025))
 # simdat$postcred2_z <- apply(post_z, 1, function(x) quantile(x, 0.975))
 # 
-leg_title <- TeX('$z(s)$')
+# leg_title <- TeX('$z(s)$')
 # title <- TeX('$n = 100$')
-p1 <- pointref_plot(simdat, "z", legend_title = leg_title)
+# p1 <- pointref_plot(simdat, "z", legend_title = leg_title)
 # p2 <- pointref_plot(simdat, "postmean_z", legend_title = leg_title)
 # p3 <- pointref_plot(simdat, "postsd_z", legend_title = leg_title)
 # p4 <- pointref_plot(simdat, "postcred1_z", legend_title = leg_title)
 # p5 <- pointref_plot(simdat, "postcred2_z", legend_title = leg_title)
-p6 <- pointref_plot(simdat, "postmedian_z", legend_title = leg_title)
-gridExtra::grid.arrange(p1, p6, ncol = 2)
+# p6 <- pointref_plot(simdat, "postmedian_z", legend_title = leg_title)
+# gridExtra::grid.arrange(p1, p6, ncol = 2)
 
 # pointref_plot(simdat, "y", legend_title = "y")
 # pointref_plot(simdat, "yhat", legend_title = "y_hat")

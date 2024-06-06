@@ -35,10 +35,10 @@ post_beta <- postrun_samps$beta
 # Print credible intervals of fixed effects
 print(ci_beta(t(post_beta)))
 
-simdat$postmedian_z <- apply(post_z, 1, median)
-leg_title <- TeX('$z(s)$')
-p1 <- pointref_plot(simdat, "z", legend_title = leg_title)
-p2 <- pointref_plot(simdat, "postmedian_z", legend_title = leg_title)
-
-ggsave("true_z_binom.pdf", plot = p1, width = 4, height = 4, units='in')
-ggsave("postmedian_z_binom.pdf", plot = p2, width = 4, height = 4, units='in')
+# simdat$postmedian_z <- apply(post_z, 1, median)
+# leg_title <- TeX('$z(s)$')
+# p1 <- pointref_plot(simdat, "z", legend_title = leg_title)
+# p2 <- pointref_plot(simdat, "postmedian_z", legend_title = leg_title)
+# 
+# ggsave("true_z_binom.pdf", plot = p1, width = 4, height = 4, units='in')
+# ggsave("postmedian_z_binom.pdf", plot = p2, width = 4, height = 4, units='in')

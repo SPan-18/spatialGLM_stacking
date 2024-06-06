@@ -36,8 +36,8 @@ post_beta <- postrun_samps$beta
 
 print(ci_beta(t(post_beta)))
 
-simdat$postmedian_z <- apply(post_z + post_xi, 1, median)
-leg_title <- TeX('$z(s)$')
-p1 <- pointref_plot(simdat, "z", legend_title = leg_title)
-p2 <- pointref_plot(simdat, "postmedian_z", legend_title = leg_title)
-gridExtra::grid.arrange(p1, p2, ncol = 2)
+# simdat$postmedian_z <- apply(post_z + post_xi, 1, median)
+# leg_title <- TeX('$z(s)$')
+# p1 <- pointref_plot(simdat, "z", legend_title = leg_title)
+# p2 <- pointref_plot(simdat, "postmedian_z", legend_title = leg_title)
+# gridExtra::grid.arrange(p1, p2, ncol = 2)

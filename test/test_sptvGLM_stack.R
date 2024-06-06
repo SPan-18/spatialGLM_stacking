@@ -3,7 +3,6 @@ rm(list = ls())
 source("../src/runsrc.R")
 
 simdat <- read.csv("../data/sim_sptv_1000.csv")
-# simdat <- read.csv("../data/sim_sptvcount100.3.csv")
 
 # Test on rows 1:100
 simdat <- simdat[1:100, ]
