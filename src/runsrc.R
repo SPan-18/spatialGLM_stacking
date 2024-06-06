@@ -1,6 +1,6 @@
 # Load required libraries
 library("MASS")
-suppressPackageStartupMessages(library("Rfast"))
+# suppressPackageStartupMessages(library("Rfast"))
 # library("fastmatrix")
 library("parallel")
 library("progress")
@@ -21,6 +21,7 @@ library("latex2exp")
 library("knitr")
 library("Rcpp")
 library("spBayes")
+# library('matrixStats')
 
 # Source required scripts
 
