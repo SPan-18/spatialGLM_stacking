@@ -2,7 +2,7 @@ rm(list = ls())
 
 source("../src/runsrc.R")
 
-simdat <- read.csv("../data/sim_dyncount100.3.csv")
+simdat <- read.csv("../data/sim_dyncount100.10.csv")
 
 # Test on rows 1:100
 # simdat <- simdat[1:1000, ]
