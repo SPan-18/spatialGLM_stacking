@@ -9,7 +9,7 @@
 
 This repository contains code to implement different analyses, as it appears in the manuscript "Bayesian Inference for Spatial-temporal Non-Gaussian Data Using Predictive Stacking".
 
-Soumyakanti Pan, Lu Zhang, Jonathan R. Bradley, and Sudipto Banerjee. 2024. _Bayesian Inference for Spatial-Temporal Non-Gaussian Data Using Predictive Stacking._ https://arxiv.org/abs/2406.04655.
+Soumyakanti Pan, Lu Zhang, Jonathan R. Bradley, and Sudipto Banerjee. 2024. _Bayesian Inference for Spatial-temporal Non-Gaussian Data Using Predictive Stacking._ https://arxiv.org/abs/2406.04655.
 
 Implemented models include Bayesian spatial and spatial-temporal (discrete as well as continuous time domains) regressions on Poisson and binomial point-referenced count data with application to modeling avian counts recorded in the [North American Breeding Bird Survey](https://www.usgs.gov/data/2022-release-north-american-breeding-bird-survey-dataset-1966-2021).
 
