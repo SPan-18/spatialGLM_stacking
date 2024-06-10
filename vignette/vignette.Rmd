@@ -49,7 +49,9 @@ knitr::opts_chunk$set(echo = TRUE, comment = NA,
 ```
 
 # Introduction
-This document is a guide to the code as it appears on the GitHub repository [spatialGLM_stacking](https://github.com/SPan-18/spatialGLM_stacking) that we have developed in order to implement Bayesian predictive stacking for analyzing outcomes that arrive as counts over spatial-temporal coordinates.
+This document is a guide to the code as it appears on the GitHub repository [spatialGLM_stacking](https://github.com/SPan-18/spatialGLM_stacking) that we have developed in order to implement Bayesian predictive stacking for analyzing outcomes that arrive as counts over spatial-temporal coordinates. Technical details for this development appears in [@pan2024stacking].
+
+<span style="font-size:1.1em;">Soumyakanti Pan, Lu Zhang, Jonathan R. Bradley, and Sudipto Banerjee. 2024. _Bayesian Inference for Spatial-Temporal Non-Gaussian Data Using Predictive Stacking._ https://arxiv.org/abs/2406.04655.</span>
 
 ## A brief summary 
 Analyzing non-Gaussian spatial-temporal data typically requires introducing spatial dependence in generalized linear models through the link function of an exponential family distribution. However, unlike in Gaussian likelihoods, inference is considerably encumbered by the inability to analytically integrate out the random effects and reduce the dimension of the parameter space. We propose exploiting generalized conjugate multivariate distribution theory [@bradley2023lgp] for exponential families, which enables exact sampling from analytically available posterior distributions conditional upon some fixed process parameters. Subsequently, we combine inference from these individual posterior distributions over a range of values of these parameters using Bayesian predictive stacking. The subsequent sections provide a brief summary on usage of the functions we developed to fit various spatial as well as spatial-temporal regressions on count data with fixed regression coefficients as well spatially-temporally varying regression coefficients.
@@ -422,7 +424,7 @@ where $x(\ell_i)$ is a $p\times 1$ vector of predictors, $\beta$ is the correspo
 R_j(\ell, \ell'; \thetasp_j) = \frac{1}{ \phi_{tj} |t-t'|^2+1 } \exp\left(  -\frac{\phi_{sj} \| s-s' \| }{\sqrt{1+\phi_{tj} |t-t'|^2} }   \right),\quad \phi_{tj},\phi_{sj}>0 \;,
 (\#eq:corrfn)
 \end{equation}
-where $\ell=(s,t)$ and $\ell'=(s',t')$ are any two distinct space-time coordinates, $\|\cdot\|$ is the Euclidean distance over $\calS$, $\thetasp_j = (\phi_{tj}, \phi_{sj})$ are positive spatial and temporal decay parameters, respectively. Technical details can be found in ``our paper''.
+where $\ell=(s,t)$ and $\ell'=(s',t')$ are any two distinct space-time coordinates, $\|\cdot\|$ is the Euclidean distance over $\calS$, $\thetasp_j = (\phi_{tj}, \phi_{sj})$ are positive spatial and temporal decay parameters, respectively. Technical details can be found in [@pan2024stacking].
 
 ## Simulation of a STVC dataset
 

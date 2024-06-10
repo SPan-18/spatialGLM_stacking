@@ -601,7 +601,8 @@ display: none;
 
 <div id="introduction" class="section level1" number="1">
 <h1><span class="header-section-number">1</span> Introduction</h1>
-<p>This document is a guide to the code as it appears on the GitHub repository <a href="https://github.com/SPan-18/spatialGLM_stacking">spatialGLM_stacking</a> that we have developed in order to implement Bayesian predictive stacking for analyzing outcomes that arrive as counts over spatial-temporal coordinates.</p>
+<p>This document is a guide to the code as it appears on the GitHub repository <a href="https://github.com/SPan-18/spatialGLM_stacking">spatialGLM_stacking</a> that we have developed in order to implement Bayesian predictive stacking for analyzing outcomes that arrive as counts over spatial-temporal coordinates. Technical details for this development appears in <span class="citation">(<a href="#ref-pan2024stacking">Pan et al. 2024</a>)</span>.</p>
+<p><span style="font-size:1.1em;">Soumyakanti Pan, Lu Zhang, Jonathan R. Bradley, and Sudipto Banerjee. 2024. <em>Bayesian Inference for Spatial-Temporal Non-Gaussian Data Using Predictive Stacking.</em> <a href="https://arxiv.org/abs/2406.04655" class="uri">https://arxiv.org/abs/2406.04655</a>.</span></p>
 <div id="a-brief-summary" class="section level2" number="1.1">
 <h2><span class="header-section-number">1.1</span> A brief summary</h2>
 <p>Analyzing non-Gaussian spatial-temporal data typically requires introducing spatial dependence in generalized linear models through the link function of an exponential family distribution. However, unlike in Gaussian likelihoods, inference is considerably encumbered by the inability to analytically integrate out the random effects and reduce the dimension of the parameter space. We propose exploiting generalized conjugate multivariate distribution theory <span class="citation">(<a href="#ref-bradley2023lgp">Bradley and Clinch 2023</a>)</span> for exponential families, which enables exact sampling from analytically available posterior distributions conditional upon some fixed process parameters. Subsequently, we combine inference from these individual posterior distributions over a range of values of these parameters using Bayesian predictive stacking. The subsequent sections provide a brief summary on usage of the functions we developed to fit various spatial as well as spatial-temporal regressions on count data with fixed regression coefficients as well spatially-temporally varying regression coefficients.</p>
@@ -617,8 +618,9 @@ display: none;
 <span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a><span class="co"># Install packages not yet installed</span></span>
 <span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a>installed_packages <span class="ot">&lt;-</span> packages <span class="sc">%in%</span> <span class="fu">rownames</span>(<span class="fu">installed.packages</span>())</span>
 <span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">any</span>(installed_packages <span class="sc">==</span> <span class="cn">FALSE</span>)) {</span>
-<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a>  <span class="fu">install.packages</span>(packages[<span class="sc">!</span>installed_packages])</span>
-<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a>}</span></code></pre></div>
+<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a>  <span class="fu">install.packages</span>(packages[<span class="sc">!</span>installed_packages], </span>
+<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a>                   <span class="at">repos =</span> <span class="st">&quot;http://cran.us.r-project.org&quot;</span>)</span>
+<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a>}</span></code></pre></div>
 </div>
 <div id="load-functions" class="section level2" number="1.3">
 <h2><span class="header-section-number">1.3</span> Load functions</h2>
@@ -1013,7 +1015,8 @@ beta1 -0.7101008 0.3023542 -1.2664384 -0.6887212 -0.187927</code></pre>
 <h1><span class="header-section-number">3</span> Spatially-temporally varying coefficient (STVC) model</h1>
 <p>we consider a spatial-temporal process as an uncountable set of random variables, say <span class="math inline">\(\{z(\ell): \ell\in \mathcal{D}\}\)</span>, over a domain of interest <span class="math inline">\(\mathcal{D}\)</span>. Suppose <span class="math inline">\(\mathcal{L}= \{\ell_1, \ldots, \ell_n\}\)</span> denotes <span class="math inline">\(n\)</span> space-time coordinates. We consider a STVC model for spatial-temporal data as
 <span class="math display" id="eq:stvc">\[\begin{equation}
-y(\ell_i) \sim \mathrm{EF}(x(\ell_i)^{ \top }\beta + \tilde{x}(\ell_i)^{ \top }z(\ell_i)), \quad i = 1, \dots, n.\\
+y(\ell_i) \sim \mathrm{EF}(x(\ell_i)^{ \top }\beta + \tilde{x}(\ell_i)^{ \top }z(\ell_i);
+b, \psi_y), \quad i = 1, \dots, n.\\
 \tag{3.1}
 \end{equation}\]</span>
 where <span class="math inline">\(x(\ell_i)\)</span> is a <span class="math inline">\(p\times 1\)</span> vector of predictors, <span class="math inline">\(\beta\)</span> is the corresponding <span class="math inline">\(p \times 1\)</span> vector of slopes (fixed effects), <span class="math inline">\(\tilde{x}(\ell_i)\)</span> is the <span class="math inline">\(r\times 1\)</span> vector (<span class="math inline">\(r \leq p\)</span>) consisting of those predictors in <span class="math inline">\(x(\ell_i)\)</span> that are posited to have spatially varying regression coefficients, and <span class="math inline">\(z_j = (z_j(\ell_1),\ldots,z_j(\ell_n))^{{ \top }}\)</span> is <span class="math inline">\(n\times 1\)</span> with each <span class="math inline">\(z_j(\ell_i)\)</span> being a spatially-temporally varying coefficient for the predictor <span class="math inline">\(\tilde{x}_j(\ell_i)\)</span>. We assume <span class="math inline">\(z_j(\ell) \overset{\text{ind.}}{\sim} \mathrm{CMP}(\mu_{z_j}(\ell), \sigma_{z_j}^2 R_j(\cdot, \cdot; {\theta_{\text{sp}}}_j))\)</span> for each <span class="math inline">\(j\)</span>, are a collection of <span class="math inline">\(r\)</span> independent <span class="math inline">\(\mathrm{CM}\)</span> processes with their respective parameters and log partition functions. We model the elements of <span class="math inline">\(R_j({\theta_{\text{sp}}}_j)\)</span> using the spatial-temporal correlation function
@@ -1021,7 +1024,7 @@ where <span class="math inline">\(x(\ell_i)\)</span> is a <span class="math inli
 R_j(\ell, \ell&#39;; {\theta_{\text{sp}}}_j) = \frac{1}{ \phi_{tj} |t-t&#39;|^2+1 } \exp\left(  -\frac{\phi_{sj} \| s-s&#39; \| }{\sqrt{1+\phi_{tj} |t-t&#39;|^2} }   \right),\quad \phi_{tj},\phi_{sj}&gt;0 \;,
 \tag{3.2}
 \end{equation}\]</span>
-where <span class="math inline">\(\ell=(s,t)\)</span> and <span class="math inline">\(\ell&#39;=(s&#39;,t&#39;)\)</span> are any two distinct space-time coordinates, <span class="math inline">\(\|\cdot\|\)</span> is the Euclidean distance over <span class="math inline">\(\mathcal{S}\)</span>, <span class="math inline">\({\theta_{\text{sp}}}_j = (\phi_{tj}, \phi_{sj})\)</span> are positive spatial and temporal decay parameters, respectively. Technical details can be found in ``our paper’’.</p>
+where <span class="math inline">\(\ell=(s,t)\)</span> and <span class="math inline">\(\ell&#39;=(s&#39;,t&#39;)\)</span> are any two distinct space-time coordinates, <span class="math inline">\(\|\cdot\|\)</span> is the Euclidean distance over <span class="math inline">\(\mathcal{S}\)</span>, <span class="math inline">\({\theta_{\text{sp}}}_j = (\phi_{tj}, \phi_{sj})\)</span> are positive spatial and temporal decay parameters, respectively. Technical details can be found in <span class="citation">(<a href="#ref-pan2024stacking">Pan et al. 2024</a>)</span>.</p>
 <div id="simulation-of-a-stvc-dataset" class="section level2" number="3.1">
 <h2><span class="header-section-number">3.1</span> Simulation of a STVC dataset</h2>
 <p>We simulate a spatial-temporal Poisson count dataset of sample size 100 from <a href="#eq:stvc">(3.1)</a> with spatial-temporal processes with covariogram <a href="#eq:corrfn">(3.2)</a> in each regression coefficient. We include an intercept and a predictor sampled from a standard normal distribution and consider <span class="math inline">\(\tilde{x}(\ell_i) = x(\ell_i)\)</span> for all <span class="math inline">\(i\)</span>. We choose different values for the spatial and temporal decay parameters for the each process. In particular, we take <span class="math inline">\((\phi_{t1}, \phi_{s1}) = (0.5, 2)\)</span> and <span class="math inline">\((\phi_{t2}, \phi_{s2}) = (1, 4)\)</span> for the spatial-temporal processes corresponding to the intercept and the predictor respectively. We also consider the marginal variances of the processes to be 0.25 ad 0.5 respectively. We choose such values to ensure we are sampling the true spatial-temporal random effects from processes characterized by different parameters.</p>
@@ -1165,6 +1168,9 @@ beta1 -0.7123858 0.8084918 -2.291969 -0.6641883 0.7721661</code></pre>
 <div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
 <div id="ref-bradley2023lgp" class="csl-entry">
 Bradley, Jonathan R., and Madelyn Clinch. 2023. <span>“Generating Independent Replicates Directly from the Posterior Distribution for a Class of Spatial Latent Gaussian Process Models.”</span> <a href="https://arxiv.org/abs/2203.10028">https://arxiv.org/abs/2203.10028</a>.
+</div>
+<div id="ref-pan2024stacking" class="csl-entry">
+Pan, Soumyakanti, Lu Zhang, Jonathan R. Bradley, and Sudipto Banerjee. 2024. <span>“Bayesian Inference for Spatial-Temporal Non-Gaussian Data Using Predictive Stacking.”</span> <a href="https://arxiv.org/abs/2406.04655">https://arxiv.org/abs/2406.04655</a>.
 </div>
 <div id="ref-adaMetropGibbs_2009" class="csl-entry">
 Roberts, Gareth O., and Jeffrey S. Rosenthal. 2009. <span>“Examples of Adaptive MCMC.”</span> <em>Journal of Computational and Graphical Statistics</em> 18 (2): 349–67. <a href="https://doi.org/10.1198/jcgs.2009.06134">https://doi.org/10.1198/jcgs.2009.06134</a>.
