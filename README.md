@@ -11,11 +11,11 @@
 >The R package [**spStack 1.0.0**](https://CRAN.R-project.org/package=spStack) has been
 recently released on [CRAN](https://CRAN.R-project.org/package=spStack). See the
 website [spStack: Byaesian Geostatistics Using Predictive Stacking](https://span-18.github.io/spStack-dev/)
-for illustrative examples demonstrating how the package works. Currently, 
-the package implements predictive stacking for Bayesian hierarchical spatial 
-models for Gaussian, Poisson, binomial and binary data only. The next release
-of spStack is aimed at including more functions to implement different 
-spatial-temporal models.
+for a brief tutorial consisting of illustrative examples demonstrating the main 
+functions of the package. Currently, the package implements predictive stacking 
+for Bayesian hierarchical spatial models for Gaussian, Poisson, binomial and 
+binary data. The next minor release of spStack is aimed at including more 
+functions to implement different spatial-temporal models.
 
 ***
 
