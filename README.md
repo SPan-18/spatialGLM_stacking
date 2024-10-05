@@ -8,7 +8,7 @@
 # spatialGLM_stacking: Bayesian Inference For Geostatistical Count Data Using Predictive Stacking <img src="plots/logo4_ubuntu.png" align="right" height="120" alt="" />
 
 >[!IMPORTANT]
->The R package [**spStack 1.0.0**](https://CRAN.R-project.org/package=spStack) has been
+>The R package [**spStack 1.0.0**](https://span-18.github.io/spStack-dev/) has been
 recently released on [CRAN](https://CRAN.R-project.org/package=spStack). See the
 website [spStack: Byaesian Geostatistics Using Predictive Stacking](https://span-18.github.io/spStack-dev/)
 for a brief tutorial consisting of illustrative examples demonstrating the main 
