@@ -17,6 +17,8 @@ models for Gaussian, Poisson, binomial and binary data only. The next release
 of spStack is aimed at including more functions to implement different 
 spatial-temporal models.
 
+***
+
 This repository contains code to implement different analyses, as it appears in the manuscript "Bayesian Inference for Spatial-temporal Non-Gaussian Data Using Predictive Stacking".
 
 Soumyakanti Pan, Lu Zhang, Jonathan R. Bradley, and Sudipto Banerjee. 2024. _Bayesian Inference for Spatial-temporal Non-Gaussian Data Using Predictive Stacking._ https://arxiv.org/abs/2406.04655.
