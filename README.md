@@ -7,8 +7,7 @@
 
 # spatialGLM_stacking: Bayesian Inference For Geostatistical Count Data Using Predictive Stacking <img src="plots/logo4_ubuntu.png" align="right" height="120" alt="" />
 
-<div style="border-radius: 8px; background-color: #f0f4f8; padding: 15px; border: 1px solid #d1d9e0;">
-  <h3 style="margin-top: 0;">NEWS: Software available on CRAN!</h3>
+[!IMPORTANT]
 The R package [**spStack 1.0.0**](https://CRAN.R-project.org/package=spStack) has been
 recently released on [CRAN](https://CRAN.R-project.org/package=spStack). See the
 website [spStack: Byaesian Geostatistics Using Predictive Stacking](https://span-18.github.io/spStack-dev/)
@@ -17,8 +16,6 @@ the package implements predictive stacking for Bayesian hierarchical spatial
 models for Gaussian, Poisson, binomial and binary data only. The next release
 of spStack is aimed at including more functions to implement different 
 spatial-temporal models.
-</div>
-<br>
 
 This repository contains code to implement different analyses, as it appears in the manuscript "Bayesian Inference for Spatial-temporal Non-Gaussian Data Using Predictive Stacking".
 
